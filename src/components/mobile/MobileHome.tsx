@@ -1,0 +1,110 @@
+import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import type { NavItem } from '../../types';
+
+import MobileBottomNav from '../shared/MobileBottomNav';
+
+export function MobileTopAppBar({ title }: { title: string }) {
+  return (
+    <header className="bg-[#001231] border-b border-[#5a4136] flex justify-between items-center w-full px-6 py-4 sticky top-0 z-30">
+      <div className="flex items-center gap-2">
+        <span className="material-symbols-outlined text-[#ff6600]">terminal</span>
+        <h1 className="text-[24px] font-bold text-[#ff6600] tracking-tight">{title}</h1>
+      </div>
+      <div className="w-8 h-8 rounded-full bg-[#133466] flex items-center justify-center border border-[#5a4136]">
+        <span className="material-symbols-outlined text-[#e3bfb1]" style={{ fontSize: '20px' }}>person</span>
+      </div>
+    </header>
+  );
+}
+
+// ─── Metric card reused in MobileHome ────────────────────────────────────────
+
+interface MobileMetricProps {
+  label: string; value: number; status: 'good' | 'warn'; icon: string;
+}
+
+function MobileMetric({ label, value, status, icon }: MobileMetricProps) {
+  const isGood = status === 'good';
+  return (
+    <div className="bg-[#1A2338] border border-[#2D3748] rounded-lg p-6 flex flex-col gap-2">
+      <div className="flex items-center justify-between text-[#e3bfb1]">
+        <span className="text-[14px]">{label}</span>
+        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{icon}</span>
+      </div>
+      <div className="flex items-end gap-2">
+        <span className={`text-[32px] font-bold ${isGood ? 'text-[#10B981]' : 'text-[#F59E0B]'}`}>{value}</span>
+        <span className={`text-[12px] font-bold mb-1 ${isGood ? 'text-[#10B981]' : 'text-[#F59E0B]'}`}>
+          {isGood ? 'GOOD' : 'WARN'}
+        </span>
+      </div>
+      <div className="w-full bg-[#000d27] h-1 rounded-full overflow-hidden">
+        <div className={`h-full ${isGood ? 'bg-[#10B981]' : 'bg-[#F59E0B]'}`} style={{ width: `${value * 100}%` }} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+export default function MobileHome() {
+  const { pathname } = useLocation();
+  const [copied, setCopied] = useState(false);
+  const command = 'git clone https://github.com/galvan/rag.git && docker-compose up';
+
+  function handleCopy() {
+    void navigator.clipboard.writeText(command);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="text-[#d7e2ff] font-sans h-screen flex overflow-hidden" style={{ backgroundColor: '#0A0F1C' }}>
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <MobileTopAppBar title="GalvanR.A.G" />
+        <div className="flex-1 overflow-y-auto p-6 lg:p-8">
+          <div className="max-w-5xl mx-auto space-y-8">
+            {/* Hero */}
+            <section className="text-center md:text-left py-8">
+              <h2 className="text-[32px] font-bold leading-tight tracking-[-0.02em] text-[#d7e2ff] mb-4">
+                Self-hostable RAG pipeline.{' '}
+                <br className="hidden md:block" />
+                <span className="text-[#e3bfb1]">Upload docs. Get cited answers. Measure quality.</span>
+              </h2>
+              <div className="w-16 h-1 bg-[#ff6600] rounded-full mx-auto md:mx-0 mb-6" />
+              {/* Quickstart command */}
+              <div className="hidden md:inline-flex bg-[#0D1117] rounded-lg border border-[#2D3748] p-4 items-center gap-4 shadow-lg w-full md:w-auto max-w-full overflow-hidden">
+                <span className="material-symbols-outlined text-[#e3bfb1] flex-shrink-0" style={{ fontSize: '18px' }}>terminal</span>
+                <code className="font-mono text-[13px] text-[#00BFFF] truncate">{command}</code>
+                <button onClick={handleCopy} title="Copy to clipboard" className="ml-2 p-1 text-[#e3bfb1] hover:text-[#d7e2ff] transition-colors flex-shrink-0">
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                    {copied ? 'check' : 'content_copy'}
+                  </span>
+                </button>
+              </div>
+            </section>
+
+            {/* Metrics grid */}
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <MobileMetric label="Faithfulness"     value={0.82} status="good" icon="verified" />
+              <MobileMetric label="Answer Relevancy" value={0.79} status="warn" icon="target"   />
+              <MobileMetric label="Context Recall"   value={0.74} status="warn" icon="memory"   />
+            </section>
+
+            {/* CTA */}
+            <section className="flex justify-center md:justify-start pt-6">
+              <Link
+                to="/query"
+                className="bg-[#ff6600] text-white px-8 py-4 rounded-lg text-[20px] font-semibold hover:opacity-90 active:scale-95 transition-all shadow-lg flex items-center gap-2"
+              >
+                Go to Dashboard
+                <span className="material-symbols-outlined">arrow_forward</span>
+              </Link>
+            </section>
+          </div>
+        </div>
+        <MobileBottomNav />
+      </main>
+    </div>
+  );
+}
