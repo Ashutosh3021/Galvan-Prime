@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { SettingsFormState, EnvVar } from '../../types';
-
+import type { EnvVar } from '../../types';
 import DesktopTopNav from '../shared/DesktopTopNav';
+import { useSettingsForm } from '../../hooks/useSettingsForm';
 
 const envVars: EnvVar[] = [
   { key: 'GEMINI_API_KEY',   loaded: true  },
@@ -12,31 +12,12 @@ const envVars: EnvVar[] = [
 ];
 
 export default function DesktopSettings() {
-  const [form, setForm] = useState<SettingsFormState>({
-    llmProvider:    'gemini',
-    apiKey:         '************************',
-    vectorDB:       'pinecone',
-    envRegion:      'us-east-1-aws',
-    indexName:      'galvan-docs-prod',
-    hybridWeight:   70,
-  });
-  const [showKey, setShowKey] = useState(false);
-  const [saved, setSaved]     = useState(false);
-
-  function handleSave(e: React.FormEvent) {
-    e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  }
-
-  function handleReset() {
-    setForm({ llmProvider: 'gemini', apiKey: '************************', vectorDB: 'pinecone', envRegion: 'us-east-1-aws', indexName: 'galvan-docs-prod', hybridWeight: 70 });
-  }
+  const { form, showKey, saved, setField, toggleShowKey, handleSave, handleReset } = useSettingsForm();
 
   return (
     <div className="bg-background text-on-background min-h-screen font-sans antialiased">
       <DesktopTopNav />
-      <main className="max-w-[1440px] mx-auto px-gutter py-8 md:py-12">
+      <main id="main-content" className="max-w-[1440px] mx-auto px-gutter py-8 md:py-12">
         <div className="mb-8">
           <h1 className="text-[32px] font-semibold leading-tight tracking-[-0.01em] text-on-surface">System Configuration</h1>
           <p className="text-[16px] leading-relaxed text-on-surface-variant mt-2 max-w-2xl">
@@ -74,7 +55,7 @@ export default function DesktopSettings() {
                         <div className="flex items-center justify-between">
                           <span className="text-[16px] font-bold text-on-surface">{opt.name}</span>
                           <input type="radio" name="llm_provider" value={opt.id} checked={isSelected}
-                            onChange={() => setForm(f => ({ ...f, llmProvider: opt.id }))} className="hidden" />
+                            onChange={() => setField('llmProvider', opt.id)} className="hidden" />
                           <span className={`material-symbols-outlined ${isSelected ? 'text-primary icon-fill' : 'text-on-surface-variant'}`}>
                             {isSelected ? 'radio_button_checked' : 'radio_button_unchecked'}
                           </span>
@@ -90,10 +71,10 @@ export default function DesktopSettings() {
                     <input
                       type={showKey ? 'text' : 'password'}
                       value={form.apiKey}
-                      onChange={e => setForm(f => ({ ...f, apiKey: e.target.value }))}
+                      onChange={e => setField('apiKey', e.target.value)}
                       className="w-full bg-[#05070A] border border-surface-container-highest rounded px-4 py-3 font-mono text-[14px] text-secondary focus:outline-none focus:border-primary-container transition-colors"
                     />
-                    <button type="button" onClick={() => setShowKey(v => !v)}
+                    <button type="button" onClick={toggleShowKey}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface">
                       <span className="material-symbols-outlined">{showKey ? 'visibility' : 'visibility_off'}</span>
                     </button>
@@ -127,7 +108,7 @@ export default function DesktopSettings() {
                             {db.badge}
                           </span>
                           <input type="radio" name="vector_db" value={db.id} checked={isSelected}
-                            onChange={() => setForm(f => ({ ...f, vectorDB: db.id }))} className="hidden" />
+                            onChange={() => setField('vectorDB', db.id)} className="hidden" />
                           <span className={`material-symbols-outlined ${isSelected ? 'text-secondary-container icon-fill' : 'text-on-surface-variant'}`}>
                             {isSelected ? 'radio_button_checked' : 'radio_button_unchecked'}
                           </span>
@@ -139,12 +120,12 @@ export default function DesktopSettings() {
                 <div className="flex flex-col gap-4 bg-surface p-4 rounded border border-surface-container-highest">
                   <div className="flex flex-col gap-2">
                     <label className="text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant">Environment Region</label>
-                    <input type="text" value={form.envRegion} onChange={e => setForm(f => ({ ...f, envRegion: e.target.value }))}
+                    <input type="text" value={form.envRegion} onChange={e => setField('envRegion', e.target.value)}
                       className="w-full bg-[#05070A] border border-surface-container-highest rounded px-4 py-2 font-mono text-[14px] text-on-surface focus:outline-none focus:border-secondary transition-colors" />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant">Index Name</label>
-                    <input type="text" value={form.indexName} onChange={e => setForm(f => ({ ...f, indexName: e.target.value }))}
+                    <input type="text" value={form.indexName} onChange={e => setField('indexName', e.target.value)}
                       className="w-full bg-[#05070A] border border-surface-container-highest rounded px-4 py-2 font-mono text-[14px] text-on-surface focus:outline-none focus:border-secondary transition-colors" />
                   </div>
                 </div>
@@ -166,7 +147,7 @@ export default function DesktopSettings() {
                   </div>
                   <div className="relative w-full">
                     <input type="range" min="0" max="100" value={form.hybridWeight}
-                      onChange={e => setForm(f => ({ ...f, hybridWeight: Number(e.target.value) }))}
+                      onChange={e => setField('hybridWeight', Number(e.target.value))}
                       className="w-full h-2" />
                     <div className="absolute -top-8 -translate-x-1/2 bg-surface-bright px-2 py-1 rounded text-[12px] font-semibold text-on-surface shadow-md"
                       style={{ left: `${form.hybridWeight}%` }}>

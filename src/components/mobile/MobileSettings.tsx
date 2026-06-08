@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import MobileBottomNav from '../shared/MobileBottomNav';
-import type { SettingsFormState, EnvVar } from '../../types';
+import type { EnvVar } from '../../types';
+import { useSettingsForm } from '../../hooks/useSettingsForm';
 
 const envVars: EnvVar[] = [
   { key: 'GEMINI_API_KEY',   loaded: true  },
@@ -11,22 +11,7 @@ const envVars: EnvVar[] = [
 
 export default function MobileSettings() {
   const { pathname } = useLocation();
-  const [form, setForm] = useState<SettingsFormState>({
-    llmProvider:  'gemini',
-    apiKey:       '************************',
-    vectorDB:     'pinecone',
-    envRegion:    'us-west4-gcp-free',
-    indexName:    '',
-    hybridWeight: 70,
-  });
-  const [showKey, setShowKey] = useState(false);
-  const [saved, setSaved]     = useState(false);
-
-  function handleSave(e: React.FormEvent) {
-    e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  }
+  const { form, showKey, saved, setField, toggleShowKey, handleSave } = useSettingsForm();
 
   return (
     <div className="bg-[#0A0F1C] text-[#d7e2ff] font-sans min-h-screen flex">
@@ -55,7 +40,7 @@ export default function MobileSettings() {
               <div className="flex flex-col gap-2">
                 <label className="text-[12px] font-semibold tracking-[0.05em] text-[#e3bfb1] uppercase">Model Selection</label>
                 <div className="relative">
-                  <select value={form.llmProvider} onChange={e => setForm(f => ({ ...f, llmProvider: e.target.value }))}
+                  <select value={form.llmProvider} onChange={e => setField('llmProvider', e.target.value)}
                     className="w-full tech-input border border-[#2D3748] rounded text-[14px] text-[#d7e2ff] py-2 px-3 appearance-none focus:ring-0">
                     <option value="gemini-flash">Gemini 1.5 Flash</option>
                     <option value="gemini-pro">Gemini 1.5 Pro</option>
@@ -71,10 +56,10 @@ export default function MobileSettings() {
                   <input
                     type={showKey ? 'text' : 'password'}
                     value={form.apiKey}
-                    onChange={e => setForm(f => ({ ...f, apiKey: e.target.value }))}
+                    onChange={e => setField('apiKey', e.target.value)}
                     className="w-full tech-input border border-[#2D3748] rounded font-mono text-[13px] text-[#d7e2ff] py-2 px-3 focus:ring-0"
                   />
-                  <button type="button" onClick={() => setShowKey(v => !v)}
+                  <button type="button" onClick={toggleShowKey}
                     className="absolute right-3 text-[#e3bfb1] hover:text-[#ff6600] transition-colors">
                     <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{showKey ? 'visibility' : 'visibility_off'}</span>
                   </button>
@@ -104,7 +89,7 @@ export default function MobileSettings() {
                           isSelected ? 'border-[#ff6600] bg-[#ff6600]/10 text-[#ff6600]' : 'border-[#2D3748] text-[#e3bfb1] hover:border-[#ff6600]/50'
                         }`}>
                         <input type="radio" name="vector_store" value={db.id} checked={isSelected}
-                          onChange={() => setForm(f => ({ ...f, vectorDB: db.id }))} className="hidden" />
+                          onChange={() => setField('vectorDB', db.id)} className="hidden" />
                         {db.isCloud && <span className="material-symbols-outlined text-[#8bd5ff]" style={{ fontSize: '16px' }}>cloud</span>}
                         <span className="text-[14px]">{db.label}</span>
                       </label>
@@ -114,7 +99,7 @@ export default function MobileSettings() {
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-[12px] font-semibold tracking-[0.05em] text-[#e3bfb1] uppercase">Environment</label>
-                <input type="text" value={form.envRegion} onChange={e => setForm(f => ({ ...f, envRegion: e.target.value }))}
+                <input type="text" value={form.envRegion} onChange={e => setField('envRegion', e.target.value)}
                   className="w-full tech-input border border-[#2D3748] rounded font-mono text-[13px] text-[#8bd5ff] py-2 px-3 focus:ring-0" />
               </div>
             </div>
@@ -134,7 +119,7 @@ export default function MobileSettings() {
                 </span>
               </div>
               <input type="range" min="0" max="100" value={form.hybridWeight}
-                onChange={e => setForm(f => ({ ...f, hybridWeight: Number(e.target.value) }))}
+                onChange={e => setField('hybridWeight', Number(e.target.value))}
                 className="w-full" />
               <div className="flex justify-between text-[14px] text-[#e3bfb1]">
                 <span>Semantic (Vector)</span><span>Keyword (BM25)</span>

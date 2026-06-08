@@ -117,10 +117,37 @@ export default {
           "0%": { opacity: "0", transform: "translateY(8px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "page-enter": {
+          "0%": { opacity: "0", transform: "translateY(6px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "slide-up": {
+          "0%": { opacity: "0", transform: "translateY(16px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "scale-in": {
+          "0%": { opacity: "0", transform: "scale(0.97)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        "pulse-ring": {
+          "0%, 100%": { boxShadow: "0 0 0 0 rgba(255,102,0,0.4)" },
+          "50%": { boxShadow: "0 0 0 6px rgba(255,102,0,0)" },
+        },
       },
       animation: {
         sweep: "sweep 0.3s ease-in-out",
         "fade-in": "fade-in 0.3s ease-out",
+        "page-enter": "page-enter 0.25s ease-out both",
+        "slide-up": "slide-up 0.3s ease-out both",
+        "scale-in": "scale-in 0.2s ease-out both",
+        "pulse-ring": "pulse-ring 2s ease-in-out infinite",
+      },
+      boxShadow: {
+        "glow-orange": "0 0 15px 2px rgba(255,102,0,0.35)",
+        "glow-orange-sm": "0 0 8px 1px rgba(255,102,0,0.25)",
+        "glow-blue": "0 0 12px 2px rgba(0,189,253,0.25)",
+        "card": "0 4px 16px rgba(0,0,0,0.3)",
+        "card-hover": "0 8px 24px rgba(0,0,0,0.45)",
       },
     },
   },

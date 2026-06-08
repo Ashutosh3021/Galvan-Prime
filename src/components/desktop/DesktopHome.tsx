@@ -60,7 +60,7 @@ export default function DesktopHome() {
     <div className="bg-surface-container-lowest text-on-surface min-h-screen flex flex-col">
       <DesktopTopNav />
 
-      <main className="flex-grow flex flex-col items-center justify-center px-gutter py-24 w-full max-w-[1440px] mx-auto relative">
+      <main id="main-content" className="flex-grow flex flex-col items-center justify-center px-gutter py-24 w-full max-w-[1440px] mx-auto relative animate-page-enter">
         {/* Background decor */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]" />

@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react';
+import { memo, type ReactElement } from 'react';
 import { useIsDesktop } from '../../hooks/useMediaQuery';
 
 interface ResponsiveWrapperProps {
@@ -15,15 +15,15 @@ interface ResponsiveWrapperProps {
  * current viewport width.  Uses the `useIsDesktop` hook so it stays reactive
  * and re-renders whenever the viewport crosses the 1024 px breakpoint.
  *
- * Usage:
- * ```tsx
- * <ResponsiveWrapper
- *   desktop={<DesktopHome />}
- *   mobile={<MobileHome />}
- * />
- * ```
+ * Wrapped in React.memo so parent re-renders don't cascade unless the
+ * desktop/mobile props themselves change.
  */
-export default function ResponsiveWrapper({ desktop, mobile }: ResponsiveWrapperProps) {
+const ResponsiveWrapper = memo(function ResponsiveWrapper({
+  desktop,
+  mobile,
+}: ResponsiveWrapperProps) {
   const isDesktop = useIsDesktop();
   return isDesktop ? desktop : mobile;
-}
+});
+
+export default ResponsiveWrapper;
