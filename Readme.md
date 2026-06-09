@@ -9,6 +9,10 @@
 ![Docker](https://img.shields.io/badge/Docker-ready-0A0F1C?style=for-the-badge&logo=docker&logoColor=00BFFF)
 ![License](https://img.shields.io/badge/license-MIT-A3BFFA?style=for-the-badge)
 
+<a href="https://galvanrag.vercel.app/">
+  <img src="https://img.shields.io/badge/Try-GalvanR.A.G-9146FF?style=for-the-badge" alt="Try GalvanR.A.G">
+</a>
+
 **Self-hostable RAG pipeline. Upload docs. Get cited answers. Measure quality.**
 
 [Quickstart](#quickstart) · [API Docs](#api) · [Evaluation](#evaluation) · [Roadmap](#roadmap)
