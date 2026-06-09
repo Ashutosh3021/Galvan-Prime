@@ -40,6 +40,9 @@ export function useLoginForm() {
     setState(prev => ({ ...prev, showPassword: !prev.showPassword }));
   }, []);
 
+  const VALID_EMAIL = 'test@galvanrag.com';
+  const VALID_PASSWORD = 'password123';
+
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
@@ -47,9 +50,13 @@ export function useLoginForm() {
 
       setState(prev => ({ ...prev, isSubmitting: true, error: null }));
       try {
-        // Simulate async auth — swap with real API call
         await new Promise<void>(res => setTimeout(res, 800));
-        navigate('/profile');
+
+        if (state.email.trim() !== VALID_EMAIL || state.password !== VALID_PASSWORD) {
+          throw new Error('Invalid credentials');
+        }
+
+        navigate('/home');
       } catch {
         setState(prev => ({
           ...prev,

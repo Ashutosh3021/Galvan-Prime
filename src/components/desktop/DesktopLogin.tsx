@@ -1,4 +1,3 @@
-// src/components/desktop/DesktopLogin.tsx
 import { Link } from 'react-router-dom';
 import { useLoginForm } from '../../hooks/useLoginForm';
 

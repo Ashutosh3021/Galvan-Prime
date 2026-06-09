@@ -1,4 +1,3 @@
-// src/components/desktop/DesktopSignup.tsx
 import { Link } from 'react-router-dom';
 import { useSignupForm } from '../../hooks/useSignupForm';
 
@@ -8,7 +7,6 @@ export default function DesktopSignup() {
 
   return (
     <div className="font-sans min-h-screen flex flex-col bg-[#0A0F1C] text-[#dee2f5]">
-
       <main
         id="main-content"
         className="flex-grow flex items-center justify-center pt-20 pb-12 px-8 relative overflow-hidden"

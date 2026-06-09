@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Layout from '../components/shared/Layout';
 
 // Code-split every page — only the active route's bundle is loaded
@@ -39,7 +39,8 @@ function PageSkeleton() {
  * A lightweight skeleton is shown via Suspense while chunks are fetched.
  *
  * Route map:
- *   /          → Home
+ *   /          → Redirect to /login
+ *   /home      → Home
  *   /query     → Chat / Query interface
  *   /api-docs  → API Reference
  *   /settings  → System Configuration
@@ -61,8 +62,9 @@ export default function AppRoutes() {
           so the skeleton always shows during a new lazy load, not just the first.
         */}
         <Routes location={location} key={location.pathname}>
-          <Route path="/"          element={<HomePage />} />
-          <Route path="/query"     element={<QueryPage />} />
+          <Route path="/"          element={<Navigate to="/login" replace />} />
+          <Route path="/home"     element={<HomePage />} />
+          <Route path="/query"    element={<QueryPage />} />
           <Route path="/api-docs"  element={<ApiDocsPage />} />
           <Route path="/settings"  element={<SettingsPage />} />
           <Route path="/status"    element={<StatusPage />} />

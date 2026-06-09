@@ -3,7 +3,7 @@ import { useState, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const links = [
-  { to: '/',         label: 'Home'     },
+  { to: '/home',     label: 'Home'     },
   { to: '/ingest',   label: 'Ingest'   },
   { to: '/query',    label: 'Query'    },
   { to: '/eval',     label: 'Eval'     },
@@ -33,7 +33,7 @@ export default function DesktopTopNav() {
       <div className="flex justify-between items-center w-full px-gutter max-w-[1440px] mx-auto h-16">
         {/* Brand */}
         <Link
-          to="/"
+          to="/home"
           aria-label="GalvanR.A.G. — Go to home"
           className="flex items-center gap-2 rounded-md focus-visible:ring-2 focus-visible:ring-primary-container"
         >
