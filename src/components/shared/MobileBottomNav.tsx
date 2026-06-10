@@ -1,12 +1,13 @@
 // src/components/shared/MobileBottomNav.tsx
 import { Link, useLocation } from 'react-router-dom';
 
+// Reference HTML has 5 items (no Settings), with corrected icons
 const navItems = [
-  { label: 'Home',     to: '/home',     icon: 'home'        },
-  { label: 'Query',    to: '/query',    icon: 'search'      },
-  { label: 'Eval',     to: '/eval',     icon: 'analytics'   },
-  { label: 'Settings', to: '/settings', icon: 'settings'    },
-  { label: 'Status',   to: '/status',   icon: 'query_stats' },
+  { label: 'Home',        to: '/home',        icon: 'home'        },
+  { label: 'Ingest',      to: '/ingest',      icon: 'upload_file' },
+  { label: 'Query',       to: '/query',       icon: 'search_check' },
+  { label: 'Eval',        to: '/eval',        icon: 'assessment'  },
+  { label: 'Collections', to: '/collections', icon: 'folder_open' },
 ];
 
 export default function MobileBottomNav() {
@@ -15,9 +16,9 @@ export default function MobileBottomNav() {
   return (
     <nav
       aria-label="Mobile navigation"
-      className="md:hidden fixed bottom-0 left-0 w-full bg-[#001e48]/95 backdrop-blur-md border-t border-[#5a4136]
-        flex justify-around items-stretch px-2 z-[9999]"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 8px)' }}
+      className="md:hidden fixed bottom-0 left-0 w-full z-50
+        flex justify-around items-center py-sm px-gutter
+        bg-surface-container-low border-t border-outline-variant rounded-t-xl"
     >
       {navItems.map(item => {
         const isActive = pathname === item.to;
@@ -27,21 +28,10 @@ export default function MobileBottomNav() {
             to={item.to}
             aria-label={item.label}
             aria-current={isActive ? 'page' : undefined}
-            className={`flex flex-col items-center justify-center gap-0.5 py-2 px-3 relative flex-1
-              min-h-[56px] rounded-md transition-colors
-              ${isActive
-                ? 'text-[#ff6600]'
-                : 'text-[#e3bfb1] hover:text-[#dee2f5] hover:bg-white/5'
-              }`}
+            className={`flex flex-col items-center justify-center
+              hover:text-primary transition-all active:scale-90 duration-200
+              ${isActive ? 'text-primary font-bold' : 'text-on-surface-variant'}`}
           >
-            {/* Active indicator bar */}
-            {isActive && (
-              <span
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#ff6600] rounded-full"
-                aria-hidden="true"
-              />
-            )}
-
             <span
               className="material-symbols-outlined transition-all"
               style={{
@@ -53,11 +43,7 @@ export default function MobileBottomNav() {
               {item.icon}
             </span>
 
-            <span
-              className={`text-[10px] font-bold leading-none transition-colors ${
-                isActive ? 'text-[#ff6600]' : ''
-              }`}
-            >
+            <span className="text-label-caps font-label-caps leading-none mt-0.5">
               {item.label}
             </span>
           </Link>
