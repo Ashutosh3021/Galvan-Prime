@@ -30,6 +30,12 @@ sentence-transformers==2.7.0     # all-MiniLM-L6-v2 embeddings
 chromadb==0.5.0                  # local vector store
 aiofiles==23.2.1                 # async file I/O for uploads
 
+# Phase 3 — Retrieval + Generation
+rank-bm25==0.2.2                 # BM25 retrieval
+langchain==0.2.16                # RAG chain orchestration
+langchain-google-genai==1.0.10   # Gemini LLM
+langchain-openai==0.1.25         # OpenAI LLM (optional fallback)
+
 # Testing
 pytest==8.2.0
 pytest-asyncio==0.23.7
