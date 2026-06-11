@@ -16,24 +16,21 @@ export default function DesktopTopNav() {
   return (
     <nav
       aria-label="Primary navigation"
-      className="bg-surface-container-lowest border-b border-outline-variant sticky top-0 z-50"
+      className="hidden md:block bg-surface-container-lowest border-b border-outline-variant sticky top-0 z-50"
     >
-      <div className="flex justify-between items-center w-full px-gutter max-w-[1440px] mx-auto h-16">
+      <div className="flex items-center justify-between w-full px-gutter max-w-[1440px] mx-auto h-16">
 
-        {/* Brand — text only, no icon, matches reference */}
+        {/* Brand */}
         <Link
           to="/home"
           aria-label="GalvanR.A.G. — Go to home"
-          className="text-title-md font-black text-primary tracking-tighter rounded focus-visible:ring-2 focus-visible:ring-primary-container"
+          className="text-title-md font-black text-primary tracking-tighter shrink-0"
         >
           GalvanR.A.G.
         </Link>
 
-        {/* Nav links */}
-        <div
-          className="hidden md:flex items-center space-x-1 h-full"
-          role="list"
-        >
+        {/* Nav links — naturally spaced cluster, matching reference */}
+        <div className="flex items-center space-x-1 h-full" role="list">
           {links.map(({ to, label }) => {
             const isActive = pathname === to;
             return (
@@ -42,11 +39,10 @@ export default function DesktopTopNav() {
                 to={to}
                 role="listitem"
                 aria-current={isActive ? 'page' : undefined}
-                className={`h-full flex items-center text-label-caps font-label-caps px-3 py-2 rounded transition-all
-                  focus-visible:outline-2 focus-visible:outline-primary-container focus-visible:outline-offset-[-2px]
+                className={`h-full flex items-center px-3 py-2 text-label-caps font-label-caps relative transition-all
                   ${isActive
-                    ? 'text-primary font-bold border-b-2 border-primary scale-95 duration-100 ease-in-out'
-                    : 'text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 transition-colors'
+                    ? 'text-primary font-bold border-b-2 border-primary'
+                    : 'text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 rounded'
                   }`}
               >
                 {label}
@@ -55,49 +51,9 @@ export default function DesktopTopNav() {
           })}
         </div>
 
-        {/* Trailing actions — icons + avatar + status button */}
-        <div className="flex items-center gap-6">
-          {/* Icon actions */}
-          <div className="flex items-center gap-4">
-            <span
-              className="material-symbols-outlined cursor-pointer active:scale-95 text-on-surface-variant hover:text-primary transition-colors duration-200"
-              aria-label="Notifications"
-              role="button"
-              tabIndex={0}
-            >
-              notifications
-            </span>
-            <span
-              className="material-symbols-outlined cursor-pointer active:scale-95 text-on-surface-variant hover:text-primary transition-colors duration-200"
-              aria-label="Help"
-              role="button"
-              tabIndex={0}
-            >
-              help
-            </span>
-          </div>
+        {/* Right side placeholder keeps brand left / links centred */}
+        <div className="w-[160px]" aria-hidden="true" />
 
-          {/* User avatar */}
-          <div className="h-8 w-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant">
-            <div className="w-full h-full bg-surface-container-highest flex items-center justify-center">
-              <span
-                className="material-symbols-outlined text-on-surface-variant"
-                style={{ fontSize: '18px' }}
-                aria-hidden="true"
-              >
-                person
-              </span>
-            </div>
-          </div>
-
-          {/* Status button */}
-          <button
-            className="bg-primary-container text-on-primary px-4 py-2 rounded text-label-caps font-label-caps hover:brightness-110 transition-all"
-            aria-label="System status"
-          >
-            Status
-          </button>
-        </div>
       </div>
     </nav>
   );

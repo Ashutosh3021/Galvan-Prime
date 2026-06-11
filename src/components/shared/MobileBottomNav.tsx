@@ -1,7 +1,6 @@
 // src/components/shared/MobileBottomNav.tsx
 import { Link, useLocation } from 'react-router-dom';
 
-// Reference HTML has 5 items (no Settings), with corrected icons
 const navItems = [
   { label: 'Home',        to: '/home',        icon: 'home'        },
   { label: 'Ingest',      to: '/ingest',      icon: 'upload_file' },
@@ -17,8 +16,9 @@ export default function MobileBottomNav() {
     <nav
       aria-label="Mobile navigation"
       className="md:hidden fixed bottom-0 left-0 w-full z-50
-        flex justify-around items-center py-sm px-gutter
-        bg-surface-container-low border-t border-outline-variant rounded-t-xl"
+        flex items-stretch
+        bg-surface-container-low border-t border-outline-variant"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       {navItems.map(item => {
         const isActive = pathname === item.to;
@@ -28,12 +28,12 @@ export default function MobileBottomNav() {
             to={item.to}
             aria-label={item.label}
             aria-current={isActive ? 'page' : undefined}
-            className={`flex flex-col items-center justify-center
-              hover:text-primary transition-all active:scale-90 duration-200
-              ${isActive ? 'text-primary font-bold' : 'text-on-surface-variant'}`}
+            className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5
+              transition-colors active:scale-90 duration-200
+              ${isActive ? 'text-primary' : 'text-on-surface-variant hover:text-primary hover:bg-white/5'}`}
           >
             <span
-              className="material-symbols-outlined transition-all"
+              className="material-symbols-outlined"
               style={{
                 fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
                 fontSize: '24px',
@@ -42,8 +42,7 @@ export default function MobileBottomNav() {
             >
               {item.icon}
             </span>
-
-            <span className="text-label-caps font-label-caps leading-none mt-0.5">
+            <span className="text-[10px] font-bold leading-none tracking-wide">
               {item.label}
             </span>
           </Link>
