@@ -36,6 +36,10 @@ langchain==0.2.16                # RAG chain orchestration
 langchain-google-genai==1.0.10   # Gemini LLM
 langchain-openai==0.1.25         # OpenAI LLM (optional fallback)
 
+# Phase 7 — RAGAS Evaluation
+ragas==0.1.21                    # RAGAS evaluation framework
+datasets==2.20.0                 # HuggingFace datasets (ragas dependency)
+
 # Testing
 pytest==8.2.0
 pytest-asyncio==0.23.7
