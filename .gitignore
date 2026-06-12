@@ -1,4 +1,4 @@
-# Logs
+# ── Node / Frontend ───────────────────────────────────────────────────────────
 logs
 *.log
 npm-debug.log*
@@ -6,13 +6,36 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-.venv/
 node_modules
 dist
 dist-ssr
 *.local
 
-# Editor directories and files
+# ── Python / Backend ─────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# ── Secrets — NEVER commit these ─────────────────────────────────────────────
+backend/.env
+.env
+*.env
+!*.env.example
+
+# ── Local data (mounted as Docker volumes) ────────────────────────────────────
+backend/chroma_db/
+backend/.cache/
+
+# ── Editor / OS ───────────────────────────────────────────────────────────────
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -22,7 +45,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+Thumbs.db
 
-# Project specific
-bin/
+# ── Project specific ──────────────────────────────────────────────────────────
 BIN/

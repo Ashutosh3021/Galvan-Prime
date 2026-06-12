@@ -31,6 +31,7 @@ from datasets import Dataset  # type: ignore
 
 from core.evaluation.metrics import METRICS, MetricName
 from core.generation.chain import run_rag_chain
+from core.generation.llm import get_llm  # module-level so tests can patch it
 
 logger = logging.getLogger(__name__)
 
@@ -116,10 +117,13 @@ async def run_evaluation(
 
     # ── Step 3: build RAGAS-compatible LLM + embeddings wrappers ─────────────
     try:
-        from core.generation.llm import get_llm
         from ragas.llms import LangchainLLMWrapper  # type: ignore
         from ragas.embeddings import LangchainEmbeddingsWrapper  # type: ignore
-        from langchain_community.embeddings import HuggingFaceEmbeddings  # type: ignore
+
+        try:
+            from langchain_huggingface import HuggingFaceEmbeddings  # type: ignore
+        except ImportError:
+            from langchain_community.embeddings import HuggingFaceEmbeddings  # type: ignore
 
         ragas_llm = LangchainLLMWrapper(get_llm())
 

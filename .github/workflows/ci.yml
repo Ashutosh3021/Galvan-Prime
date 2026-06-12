@@ -1,0 +1,177 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# GalvanR.A.G — CI/CD Pipeline
+#
+# Triggers:
+#   push   → main, develop
+#   PR     → main
+#
+# Jobs:
+#   lint     — ruff + black check (fast, no deps)
+#   test     — pytest with coverage against SQLite in-memory
+#   docker   — build the backend Docker image (no push on PRs)
+#   deploy   — (optional) push image to GHCR on merge to main
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "backend/**"
+      - "data/schema.sql"
+      - "docker-compose.yml"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**"
+
+env:
+  PYTHON_VERSION: "3.11"
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/galvanrag-backend
+
+jobs:
+  # ── Lint ───────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install lint tools
+        run: pip install ruff==0.4.4 black==24.4.2 --no-cache-dir
+
+      - name: ruff (lint)
+        run: ruff check . --select E,W,F,I --ignore E501
+
+      - name: black (format check)
+        run: black --check --diff .
+
+  # ── Test ───────────────────────────────────────────────────────────────────
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+    defaults:
+      run:
+        working-directory: backend
+
+    env:
+      # Test environment — SQLite in-memory, no real services needed
+      DATABASE_URL:  "sqlite+aiosqlite:///:memory:"
+      SECRET_KEY:    "ci-test-secret-key-32-chars-long!"
+      ENVIRONMENT:   "development"
+      LOG_LEVEL:     "WARNING"
+      # Empty LLM keys — tests mock all LLM calls
+      GEMINI_API_KEY:  ""
+      OPENAI_API_KEY:  ""
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt --no-cache-dir
+
+      - name: Run tests with coverage
+        run: |
+          pip install pytest-cov --no-cache-dir
+          pytest tests/ \
+            --cov=. \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --cov-omit="tests/*,db/migrations/*" \
+            -v \
+            --tb=short \
+            -q
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          files: backend/coverage.xml
+          flags: backend
+          fail_ci_if_error: false
+
+  # ── Docker build ───────────────────────────────────────────────────────────
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    # Build on every push; only push the image on main
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build (and push on main)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Cache layers between builds using GitHub Actions cache
+          cache-from: type=gha
+          cache-to:   type=gha,mode=max
+
+  # ── Deploy notification (stub) ─────────────────────────────────────────────
+  # Extend this job to deploy to your hosting provider.
+  # Examples: Railway, Render, Fly.io, AWS ECS, GCP Cloud Run.
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: [docker]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+
+    steps:
+      - name: Deployment placeholder
+        run: |
+          echo "Image ${{ env.IMAGE_NAME }}:latest is ready."
+          echo "Add your deployment step here (Render hook, Fly deploy, etc.)"
