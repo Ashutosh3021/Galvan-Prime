@@ -45,6 +45,7 @@ _MAX_UPLOAD_BYTES = 50 * 1024 * 1024  # 50 MB
 
 # ── POST /ingest ──────────────────────────────────────────────────────────────
 
+
 @router.post(
     "",
     response_model=IngestOut,
@@ -123,12 +124,13 @@ async def ingest(
         collection=doc.collection,
         chunk_count=doc.chunk_count,
         chunk_strategy=doc.chunk_strategy,  # type: ignore[arg-type]
-        status=doc.status,                  # type: ignore[arg-type]
+        status=doc.status,  # type: ignore[arg-type]
         ingested_at=doc.ingested_at,
     )
 
 
 # ── GET /ingest/collections ───────────────────────────────────────────────────
+
 
 @router.get(
     "/collections",
@@ -144,6 +146,7 @@ async def list_collections(
 
 
 # ── DELETE /ingest/{doc_id} ───────────────────────────────────────────────────
+
 
 @router.delete(
     "/{doc_id}",
@@ -177,6 +180,7 @@ async def delete_document(
     except Exception as exc:
         # Non-fatal: log and continue with DB deletion
         import logging
+
         logging.getLogger(__name__).warning("Vector deletion failed: %s", exc)
 
     await db.delete(doc)

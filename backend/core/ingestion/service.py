@@ -148,6 +148,7 @@ async def ingest_document(
         if settings.pinecone_api_key:
             try:
                 from core.retrieval.vectorstore import PineconeStore
+
                 pine = PineconeStore(
                     index_name=collection,
                     dimension=encoder.dimension,
@@ -164,7 +165,9 @@ async def ingest_document(
 
         logger.info(
             "Ingestion complete: doc_id=%s collection='%s' chunks=%d",
-            doc_id, collection, len(chunks),
+            doc_id,
+            collection,
+            len(chunks),
         )
 
     except Exception as exc:

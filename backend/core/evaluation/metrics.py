@@ -48,6 +48,7 @@ METRIC_TARGETS: dict[MetricName, float] = {
 @dataclass
 class MetricResult:
     """Structured result for a single metric."""
+
     metric: MetricName
     score: float
     target: float

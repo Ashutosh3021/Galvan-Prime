@@ -70,7 +70,9 @@ async def run_evaluation(
             raise ValueError(f"test_set[{i}] is missing 'ground_truth'")
 
     run_label = run_id or str(uuid.uuid4())[:8]
-    logger.info("RAGAS eval run=%s  collection='%s'  items=%d", run_label, collection, len(test_set))
+    logger.info(
+        "RAGAS eval run=%s  collection='%s'  items=%d", run_label, collection, len(test_set)
+    )
 
     # ── Step 1: run RAG pipeline for each test question ───────────────────────
     questions: list[str] = []
@@ -139,6 +141,7 @@ async def run_evaluation(
 
     def _run_ragas() -> dict[str, float]:
         from ragas import evaluate  # type: ignore
+
         result = evaluate(
             dataset=dataset,
             metrics=METRICS,

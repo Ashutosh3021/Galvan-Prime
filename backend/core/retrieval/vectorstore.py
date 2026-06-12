@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SearchResult:
     """A single ranked result from a vector similarity search."""
+
     chunk_text: str
     source: str
     page: Optional[int]
@@ -29,6 +30,7 @@ class SearchResult:
 
 
 # ── ChromaDB backend ──────────────────────────────────────────────────────────
+
 
 class ChromaStore:
     """
@@ -127,9 +129,7 @@ class ChromaStore:
         ids_to_delete = results.get("ids", [])
         if ids_to_delete:
             self._col.delete(ids=ids_to_delete)
-            logger.info(
-                "ChromaStore: deleted %d chunks for doc_id=%s", len(ids_to_delete), doc_id
-            )
+            logger.info("ChromaStore: deleted %d chunks for doc_id=%s", len(ids_to_delete), doc_id)
 
     def count(self) -> int:
         """Return total number of vectors in this collection."""
@@ -137,6 +137,7 @@ class ChromaStore:
 
 
 # ── Pinecone backend (optional) ───────────────────────────────────────────────
+
 
 class PineconeStore:
     """
@@ -148,11 +149,10 @@ class PineconeStore:
         try:
             from pinecone import Pinecone, ServerlessSpec  # type: ignore
         except ImportError as exc:
-            raise ImportError(
-                "Install the 'pinecone-client' package to use PineconeStore"
-            ) from exc
+            raise ImportError("Install the 'pinecone-client' package to use PineconeStore") from exc
 
         from config import get_settings
+
         s = get_settings()
 
         pc = Pinecone(api_key=s.pinecone_api_key)

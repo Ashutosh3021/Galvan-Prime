@@ -44,7 +44,9 @@ OTHER_USER = {
 async def auth_headers(client: AsyncClient) -> dict:
     resp = await client.post("/auth/register", json=REGISTER)
     if resp.status_code == 409:
-        resp = await client.post("/auth/login", json={"email": REGISTER["email"], "password": REGISTER["password"]})
+        resp = await client.post(
+            "/auth/login", json={"email": REGISTER["email"], "password": REGISTER["password"]}
+        )
     return {"Authorization": f"Bearer {resp.json()['access_token']}"}
 
 
@@ -52,7 +54,9 @@ async def auth_headers(client: AsyncClient) -> dict:
 async def other_headers(client: AsyncClient) -> dict:
     resp = await client.post("/auth/register", json=OTHER_USER)
     if resp.status_code == 409:
-        resp = await client.post("/auth/login", json={"email": OTHER_USER["email"], "password": OTHER_USER["password"]})
+        resp = await client.post(
+            "/auth/login", json={"email": OTHER_USER["email"], "password": OTHER_USER["password"]}
+        )
     return {"Authorization": f"Bearer {resp.json()['access_token']}"}
 
 
@@ -62,9 +66,11 @@ def _make_txt_bytes(content: str = "Hello world. This is a test document.") -> b
 
 # ── Unit tests: loaders ───────────────────────────────────────────────────────
 
+
 class TestLoaders:
     def test_load_text_happy_path(self):
         from core.ingestion.loaders import load_text
+
         pages = load_text(b"Hello. World.", "test.txt")
         assert len(pages) == 1
         assert pages[0].text == "Hello. World."
@@ -73,11 +79,13 @@ class TestLoaders:
 
     def test_load_text_empty_raises(self):
         from core.ingestion.loaders import load_text
+
         with pytest.raises(ValueError, match="empty"):
             load_text(b"   ", "blank.txt")
 
     def test_load_text_utf8_fallback(self):
         from core.ingestion.loaders import load_text
+
         # latin-1 encoded byte that is invalid UTF-8
         latin_bytes = "café".encode("latin-1")
         pages = load_text(latin_bytes, "latin.txt")
@@ -86,6 +94,7 @@ class TestLoaders:
     def test_load_url_fetches_text(self):
         """Mock requests.get so no real HTTP call is made."""
         from core.ingestion.loaders import load_url
+
         html = "<html><body><p>Important content here.</p></body></html>"
         with patch("core.ingestion.loaders.requests.get") as mock_get:
             mock_resp = MagicMock()
@@ -100,6 +109,7 @@ class TestLoaders:
         import requests as req
 
         from core.ingestion.loaders import load_url
+
         with patch("core.ingestion.loaders.requests.get") as mock_get:
             mock_get.side_effect = req.RequestException("timeout")
             with pytest.raises(ValueError, match="Failed to fetch"):
@@ -108,13 +118,16 @@ class TestLoaders:
 
 # ── Unit tests: chunkers ──────────────────────────────────────────────────────
 
+
 class TestChunkers:
     def _make_pages(self, text: str, n: int = 1):
         from core.ingestion.loaders import RawPage
+
         return [RawPage(text=text, page=i + 1, source="test.txt") for i in range(n)]
 
     def test_fixed_chunk_produces_chunks(self):
         from core.ingestion.chunkers import fixed_chunk
+
         long_text = "The quick brown fox jumps over the lazy dog. " * 50
         pages = self._make_pages(long_text)
         chunks = fixed_chunk(pages, chunk_size=200, overlap=20)
@@ -124,12 +137,14 @@ class TestChunkers:
 
     def test_fixed_chunk_preserves_source(self):
         from core.ingestion.chunkers import fixed_chunk
+
         pages = self._make_pages("Short text.")
         chunks = fixed_chunk(pages)
         assert all(c.source == "test.txt" for c in chunks)
 
     def test_semantic_chunk_produces_chunks(self):
         from core.ingestion.chunkers import semantic_chunk
+
         text = "First sentence. Second sentence. Third sentence. " * 30
         pages = self._make_pages(text)
         chunks = semantic_chunk(pages, target_size=200)
@@ -137,6 +152,7 @@ class TestChunkers:
 
     def test_semantic_chunk_overlap(self):
         from core.ingestion.chunkers import semantic_chunk
+
         # Enough sentences to create multiple chunks
         sentences = [f"Sentence number {i}." for i in range(40)]
         text = " ".join(sentences)
@@ -147,17 +163,20 @@ class TestChunkers:
 
     def test_empty_pages_returns_empty(self):
         from core.ingestion.chunkers import fixed_chunk, semantic_chunk
+
         assert fixed_chunk([]) == []
         assert semantic_chunk([]) == []
 
 
 # ── API tests: POST /ingest ───────────────────────────────────────────────────
 
+
 def _mock_ingest_doc(doc_id=None):
     """Return a mock Document ORM-like object."""
     from datetime import datetime, timezone
 
     from db.models.document import Document
+
     doc = MagicMock(spec=Document)
     doc.id = doc_id or uuid.uuid4()
     doc.filename = "test.txt"
@@ -173,7 +192,9 @@ def _mock_ingest_doc(doc_id=None):
 class TestIngestEndpoint:
     async def test_ingest_txt_file(self, client: AsyncClient, auth_headers):
         mock_doc = _mock_ingest_doc()
-        with patch("api.routes.ingest.ingest_document", new_callable=AsyncMock, return_value=mock_doc):
+        with patch(
+            "api.routes.ingest.ingest_document", new_callable=AsyncMock, return_value=mock_doc
+        ):
             resp = await client.post(
                 "/ingest",
                 data={"collection": "test-col", "chunk_strategy": "fixed"},
@@ -202,7 +223,9 @@ class TestIngestEndpoint:
         )
         assert resp.status_code == 422
 
-    async def test_ingest_with_both_file_and_url_returns_422(self, client: AsyncClient, auth_headers):
+    async def test_ingest_with_both_file_and_url_returns_422(
+        self, client: AsyncClient, auth_headers
+    ):
         resp = await client.post(
             "/ingest",
             data={"collection": "test-col", "url": "https://example.com"},
@@ -211,11 +234,15 @@ class TestIngestEndpoint:
         )
         assert resp.status_code == 422
 
-    async def test_ingest_unsupported_file_type_returns_415(self, client: AsyncClient, auth_headers):
+    async def test_ingest_unsupported_file_type_returns_415(
+        self, client: AsyncClient, auth_headers
+    ):
         resp = await client.post(
             "/ingest",
             data={"collection": "test-col"},
-            files={"file": ("test.docx", b"content", "application/vnd.openxmlformats-officedocument")},
+            files={
+                "file": ("test.docx", b"content", "application/vnd.openxmlformats-officedocument")
+            },
             headers=auth_headers,
         )
         assert resp.status_code == 415
@@ -223,7 +250,9 @@ class TestIngestEndpoint:
     async def test_ingest_url(self, client: AsyncClient, auth_headers):
         mock_doc = _mock_ingest_doc()
         mock_doc.filename = "https://example.com"
-        with patch("api.routes.ingest.ingest_document", new_callable=AsyncMock, return_value=mock_doc):
+        with patch(
+            "api.routes.ingest.ingest_document", new_callable=AsyncMock, return_value=mock_doc
+        ):
             resp = await client.post(
                 "/ingest",
                 data={"collection": "test-col", "url": "https://example.com"},
@@ -232,7 +261,11 @@ class TestIngestEndpoint:
         assert resp.status_code == 201
 
     async def test_ingest_service_error_returns_422(self, client: AsyncClient, auth_headers):
-        with patch("api.routes.ingest.ingest_document", new_callable=AsyncMock, side_effect=ValueError("bad PDF")):
+        with patch(
+            "api.routes.ingest.ingest_document",
+            new_callable=AsyncMock,
+            side_effect=ValueError("bad PDF"),
+        ):
             resp = await client.post(
                 "/ingest",
                 data={"collection": "test-col"},
@@ -244,6 +277,7 @@ class TestIngestEndpoint:
 
 
 # ── API tests: GET /ingest/collections ───────────────────────────────────────
+
 
 @pytest.mark.asyncio
 class TestCollections:
@@ -259,11 +293,24 @@ class TestCollections:
 
     async def test_collections_returns_list(self, client: AsyncClient, auth_headers):
         from datetime import datetime, timezone
+
         mock_data = [
-            {"name": "research", "doc_count": 3, "chunk_count": 120, "created_at": datetime.now(timezone.utc)},
-            {"name": "notes", "doc_count": 1, "chunk_count": 10, "created_at": datetime.now(timezone.utc)},
+            {
+                "name": "research",
+                "doc_count": 3,
+                "chunk_count": 120,
+                "created_at": datetime.now(timezone.utc),
+            },
+            {
+                "name": "notes",
+                "doc_count": 1,
+                "chunk_count": 10,
+                "created_at": datetime.now(timezone.utc),
+            },
         ]
-        with patch("api.routes.ingest.get_collections", new_callable=AsyncMock, return_value=mock_data):
+        with patch(
+            "api.routes.ingest.get_collections", new_callable=AsyncMock, return_value=mock_data
+        ):
             resp = await client.get("/ingest/collections", headers=auth_headers)
         assert resp.status_code == 200
         body = resp.json()
@@ -273,6 +320,7 @@ class TestCollections:
 
 
 # ── API tests: DELETE /ingest/{doc_id} ────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 class TestDeleteDocument:
@@ -291,7 +339,9 @@ class TestDeleteDocument:
         """A user must not be able to delete another user's document."""
         # Ingest a doc as the first user
         mock_doc = _mock_ingest_doc()
-        with patch("api.routes.ingest.ingest_document", new_callable=AsyncMock, return_value=mock_doc):
+        with patch(
+            "api.routes.ingest.ingest_document", new_callable=AsyncMock, return_value=mock_doc
+        ):
             ingest_resp = await client.post(
                 "/ingest",
                 data={"collection": "private-col"},

@@ -36,6 +36,7 @@ _PROBE_TIMEOUT = 3.0  # seconds per probe
 
 # ── Probe helpers ─────────────────────────────────────────────────────────────
 
+
 async def _probe_postgres(db: AsyncSession) -> ServiceStatus:
     t0 = time.monotonic()
     try:
@@ -54,6 +55,7 @@ async def _probe_chroma() -> ServiceStatus:
         def _check():
             import chromadb
             from chromadb.config import Settings as CS
+
             client = chromadb.PersistentClient(
                 path=settings.chroma_persist_dir,
                 settings=CS(anonymized_telemetry=False),
@@ -76,8 +78,10 @@ async def _probe_pinecone() -> ServiceStatus:
         return ServiceStatus(name="pinecone", status="degraded", latency_ms=None)
     t0 = time.monotonic()
     try:
+
         def _check():
             from pinecone import Pinecone  # type: ignore
+
             pc = Pinecone(api_key=settings.pinecone_api_key)
             pc.list_indexes()
 
@@ -103,6 +107,7 @@ async def _probe_llm() -> ServiceStatus:
 
 
 # ── GET /status ───────────────────────────────────────────────────────────────
+
 
 @router.get(
     "",

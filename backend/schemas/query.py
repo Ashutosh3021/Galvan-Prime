@@ -13,7 +13,9 @@ from pydantic import BaseModel, Field
 class QueryIn(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
     collection: str = Field(min_length=1, max_length=128)
-    session_id: str = Field(min_length=1, max_length=64, description="UUID; frontend generates on new chat")
+    session_id: str = Field(
+        min_length=1, max_length=64, description="UUID; frontend generates on new chat"
+    )
 
 
 class Citation(BaseModel):

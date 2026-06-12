@@ -199,6 +199,8 @@ async def hybrid_search(
 
     logger.info(
         "hybrid_search: collection='%s' query=%r → %d results",
-        collection, query[:60], len(fused),
+        collection,
+        query[:60],
+        len(fused),
     )
     return fused

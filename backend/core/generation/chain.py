@@ -59,6 +59,7 @@ continuity.
 
 # ── Output types ──────────────────────────────────────────────────────────────
 
+
 @dataclass
 class Citation:
     source: str
@@ -76,6 +77,7 @@ class RAGResult:
 
 
 # ── Context builder ───────────────────────────────────────────────────────────
+
 
 def _build_context_block(chunks: list[SearchResult]) -> str:
     """Format retrieved chunks into a numbered context block for the prompt."""
@@ -108,6 +110,7 @@ QUESTION:
 
 
 # ── Main entry point ──────────────────────────────────────────────────────────
+
 
 async def run_rag_chain(
     *,
@@ -189,7 +192,10 @@ async def run_rag_chain(
     latency_ms = int((time.monotonic() - t_start) * 1000)
     logger.info(
         "RAG chain: session=%s collection='%s' chunks=%d latency=%dms",
-        session_id, collection, len(chunks), latency_ms,
+        session_id,
+        collection,
+        len(chunks),
+        latency_ms,
     )
 
     return RAGResult(

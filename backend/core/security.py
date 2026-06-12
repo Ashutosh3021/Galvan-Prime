@@ -18,6 +18,7 @@ ALGORITHM = "HS256"
 
 # ── Password helpers ──────────────────────────────────────────────────────────
 
+
 def hash_password(plain: str) -> str:
     """Return a bcrypt hash of *plain*.
 
@@ -27,6 +28,7 @@ def hash_password(plain: str) -> str:
     """
     import base64
     import hashlib
+
     digest = base64.b64encode(hashlib.sha256(plain.encode()).digest())
     return bcrypt.hashpw(digest, bcrypt.gensalt()).decode()
 
@@ -35,11 +37,13 @@ def verify_password(plain: str, hashed: str) -> bool:
     """Return True if *plain* matches the stored bcrypt *hashed* value."""
     import base64
     import hashlib
+
     digest = base64.b64encode(hashlib.sha256(plain.encode()).digest())
     return bcrypt.checkpw(digest, hashed.encode())
 
 
 # ── JWT helpers ───────────────────────────────────────────────────────────────
+
 
 def create_access_token(subject: str) -> str:
     """
@@ -51,9 +55,7 @@ def create_access_token(subject: str) -> str:
     Returns:
         Encoded JWT string.
     """
-    expire = datetime.now(timezone.utc) + timedelta(
-        minutes=settings.access_token_expire_minutes
-    )
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
     payload = {"sub": subject, "exp": expire, "type": "access"}
     return jwt.encode(payload, settings.secret_key, algorithm=ALGORITHM)
 
@@ -88,6 +90,7 @@ def decode_access_token(token: str) -> str:
 
 # ── Refresh-token helpers ─────────────────────────────────────────────────────
 
+
 def generate_refresh_token() -> str:
     """Return a 64-character cryptographically secure hex token."""
     return secrets.token_hex(32)
@@ -95,6 +98,4 @@ def generate_refresh_token() -> str:
 
 def refresh_token_expiry() -> datetime:
     """Return the expiry datetime for a new refresh token."""
-    return datetime.now(timezone.utc) + timedelta(
-        days=settings.refresh_token_expire_days
-    )
+    return datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire_days)

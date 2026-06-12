@@ -146,13 +146,12 @@ class TestRunEvaluation:
             return_value=mock_rag,
         ):
             with patch("core.evaluation.ragas_runner._eval_executor"):
+
                 async def fake_executor(executor, fn):
                     return dict(_SAMPLE_SCORES)
 
                 with patch("asyncio.AbstractEventLoop.run_in_executor", new=fake_executor):
-                    scores = await run_evaluation(
-                        collection="test-col", test_set=_SAMPLE_TEST_SET
-                    )
+                    scores = await run_evaluation(collection="test-col", test_set=_SAMPLE_TEST_SET)
         assert isinstance(scores, dict)
 
     async def test_empty_test_set_raises_value_error(self):
@@ -220,9 +219,7 @@ class TestStartEvalRun:
             )
         assert resp.status_code == 202
 
-    async def test_response_has_run_id_and_status_running(
-        self, client: AsyncClient, auth_headers
-    ):
+    async def test_response_has_run_id_and_status_running(self, client: AsyncClient, auth_headers):
         with patch("fastapi.BackgroundTasks.add_task"):
             resp = await client.post(
                 "/eval/run",
@@ -279,9 +276,7 @@ class TestGetMetrics:
 
         from db.models.eval_result import EvalRun
 
-        result = await db_session.execute(
-            select(EvalRun).where(EvalRun.id == uuid.UUID(run_id))
-        )
+        result = await db_session.execute(select(EvalRun).where(EvalRun.id == uuid.UUID(run_id)))
         run = result.scalar_one()
         run.status = "complete"
         run.faithfulness = _SAMPLE_SCORES["faithfulness"]
@@ -292,9 +287,7 @@ class TestGetMetrics:
         await db_session.flush()
         return run_id
 
-    async def test_metrics_for_completed_run(
-        self, client: AsyncClient, auth_headers, db_session
-    ):
+    async def test_metrics_for_completed_run(self, client: AsyncClient, auth_headers, db_session):
         run_id = await self._create_completed_run(client, auth_headers, db_session)
         resp = await client.get(f"/eval/metrics?run_id={run_id}", headers=auth_headers)
         assert resp.status_code == 200
@@ -395,9 +388,7 @@ class TestEvalHistory:
         if len(history) >= 2:
             assert history[0]["created_at"] >= history[1]["created_at"]
 
-    async def test_history_scoped_to_user(
-        self, client: AsyncClient, auth_headers, other_headers
-    ):
+    async def test_history_scoped_to_user(self, client: AsyncClient, auth_headers, other_headers):
         with patch("fastapi.BackgroundTasks.add_task"):
             await client.post(
                 "/eval/run",

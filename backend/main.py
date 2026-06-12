@@ -39,8 +39,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="GalvanR.A.G API",
     description=(
-        "Self-hostable RAG engine — upload docs, get cited answers, "
-        "measure quality with RAGAS."
+        "Self-hostable RAG engine — upload docs, get cited answers, " "measure quality with RAGAS."
     ),
     version="1.0.0",
     lifespan=lifespan,

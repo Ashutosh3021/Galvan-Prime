@@ -9,7 +9,6 @@ Covers:
   - core/security helpers (hash/verify, JWT round-trip)
 """
 
-
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
@@ -23,6 +22,7 @@ from core.security import (
 )
 
 # ── Security unit tests ───────────────────────────────────────────────────────
+
 
 class TestPasswordHashing:
     def test_hash_is_not_plaintext(self):
@@ -48,6 +48,7 @@ class TestJWT:
 
     def test_invalid_token_raises(self):
         from jose import JWTError
+
         with pytest.raises(JWTError):
             decode_access_token("not.a.token")
 
@@ -130,14 +131,21 @@ class TestRefresh:
     async def tokens(self, client: AsyncClient):
         resp = await client.post(
             "/auth/register",
-            json={**REGISTER_PAYLOAD, "email": "refresh_user@example.com", "username": "refreshuser"},
+            json={
+                **REGISTER_PAYLOAD,
+                "email": "refresh_user@example.com",
+                "username": "refreshuser",
+            },
         )
         body = resp.json()
         # If user already exists from a previous test, log in instead
         if resp.status_code == 409:
             resp = await client.post(
                 "/auth/login",
-                json={"email": "refresh_user@example.com", "password": REGISTER_PAYLOAD["password"]},
+                json={
+                    "email": "refresh_user@example.com",
+                    "password": REGISTER_PAYLOAD["password"],
+                },
             )
             body = resp.json()
         return body
@@ -162,18 +170,12 @@ class TestRefresh:
         )
         assert resp.status_code == 401
 
-    async def test_refresh_token_rotation_revokes_old(
-        self, client: AsyncClient, tokens
-    ):
+    async def test_refresh_token_rotation_revokes_old(self, client: AsyncClient, tokens):
         """Using the same refresh token twice should fail on the second attempt."""
-        first = await client.post(
-            "/auth/refresh", json={"refresh_token": tokens["refresh_token"]}
-        )
+        first = await client.post("/auth/refresh", json={"refresh_token": tokens["refresh_token"]})
         assert first.status_code == 200
 
-        second = await client.post(
-            "/auth/refresh", json={"refresh_token": tokens["refresh_token"]}
-        )
+        second = await client.post("/auth/refresh", json={"refresh_token": tokens["refresh_token"]})
         assert second.status_code == 401
 
 
@@ -196,7 +198,5 @@ class TestLogout:
         assert resp.status_code == 204
 
         # Now the refresh token should be revoked
-        refresh_resp = await client.post(
-            "/auth/refresh", json={"refresh_token": refresh}
-        )
+        refresh_resp = await client.post("/auth/refresh", json={"refresh_token": refresh})
         assert refresh_resp.status_code == 401

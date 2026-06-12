@@ -21,12 +21,14 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RawPage:
     """A single extracted page / section of text with its provenance."""
+
     text: str
-    page: Optional[int] = None       # 1-indexed; None for URL/TXT sources
-    source: str = ""                  # filename or URL
+    page: Optional[int] = None  # 1-indexed; None for URL/TXT sources
+    source: str = ""  # filename or URL
 
 
 # ── PDF Loader ────────────────────────────────────────────────────────────────
+
 
 def load_pdf(file_bytes: bytes, filename: str) -> list[RawPage]:
     """
@@ -56,6 +58,7 @@ def load_pdf(file_bytes: bytes, filename: str) -> list[RawPage]:
 
 
 # ── URL Loader ────────────────────────────────────────────────────────────────
+
 
 def load_url(url: str, timeout: int = 15) -> list[RawPage]:
     """
@@ -94,6 +97,7 @@ def load_url(url: str, timeout: int = 15) -> list[RawPage]:
 
 
 # ── Plain-text Loader ─────────────────────────────────────────────────────────
+
 
 def load_text(file_bytes: bytes, filename: str) -> list[RawPage]:
     """

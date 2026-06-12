@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 # ── POST /query ───────────────────────────────────────────────────────────────
 
+
 @router.post(
     "",
     response_model=QueryOut,
@@ -63,8 +64,7 @@ async def query(
 
     # ── Serialise citations for DB storage ────────────────────────────────────
     citations_json = [
-        {"source": c.source, "page": c.page, "chunk": c.chunk}
-        for c in result.citations
+        {"source": c.source, "page": c.page, "chunk": c.chunk} for c in result.citations
     ]
 
     # ── Persist user turn ─────────────────────────────────────────────────────
@@ -95,16 +95,14 @@ async def query(
 
     return QueryOut(
         answer=result.answer,
-        citations=[
-            Citation(source=c.source, page=c.page, chunk=c.chunk)
-            for c in result.citations
-        ],
+        citations=[Citation(source=c.source, page=c.page, chunk=c.chunk) for c in result.citations],
         session_id=result.session_id,
         latency_ms=result.latency_ms,
     )
 
 
 # ── GET /query/history/{session_id} ──────────────────────────────────────────
+
 
 @router.get(
     "/history/{session_id}",

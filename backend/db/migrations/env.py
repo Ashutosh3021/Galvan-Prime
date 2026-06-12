@@ -34,6 +34,7 @@ target_metadata = Base.metadata
 
 # ── Offline mode ──────────────────────────────────────────────────────────────
 
+
 def run_migrations_offline() -> None:
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
@@ -47,6 +48,7 @@ def run_migrations_offline() -> None:
 
 
 # ── Online (async) mode ───────────────────────────────────────────────────────
+
 
 def do_run_migrations(connection) -> None:
     context.configure(connection=connection, target_metadata=target_metadata)

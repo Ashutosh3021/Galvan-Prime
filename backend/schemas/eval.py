@@ -18,7 +18,9 @@ class EvalTestItem(BaseModel):
 
 class EvalRunIn(BaseModel):
     collection: str = Field(min_length=1, max_length=128)
-    test_set: list[EvalTestItem] = Field(min_length=1, description="At least one question/ground_truth pair")
+    test_set: list[EvalTestItem] = Field(
+        min_length=1, description="At least one question/ground_truth pair"
+    )
 
     @field_validator("test_set")
     @classmethod

@@ -23,9 +23,7 @@ async def _get_or_create_settings(user: User, db: AsyncSession) -> UserSettings:
     Return the UserSettings row for *user*, creating it with defaults
     if it doesn't exist yet (defensive: register already creates one).
     """
-    result = await db.execute(
-        select(UserSettings).where(UserSettings.user_id == user.id)
-    )
+    result = await db.execute(select(UserSettings).where(UserSettings.user_id == user.id))
     settings_row: UserSettings | None = result.scalar_one_or_none()
 
     if settings_row is None:
@@ -37,6 +35,7 @@ async def _get_or_create_settings(user: User, db: AsyncSession) -> UserSettings:
 
 
 # ── GET /settings ─────────────────────────────────────────────────────────────
+
 
 @router.get(
     "",
@@ -52,6 +51,7 @@ async def get_settings_route(
 
 
 # ── PUT /settings ─────────────────────────────────────────────────────────────
+
 
 @router.put(
     "",

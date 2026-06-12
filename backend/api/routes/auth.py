@@ -29,6 +29,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+
 def _build_token_out(user: User, raw_refresh: str) -> TokenOut:
     return TokenOut(
         access_token=create_access_token(str(user.id)),
@@ -38,6 +39,7 @@ def _build_token_out(user: User, raw_refresh: str) -> TokenOut:
 
 
 # ── Register ──────────────────────────────────────────────────────────────────
+
 
 @router.post(
     "/register",
@@ -84,6 +86,7 @@ async def register(body: RegisterIn, db: AsyncSession = Depends(get_db)) -> Toke
 
 # ── Login ─────────────────────────────────────────────────────────────────────
 
+
 @router.post(
     "/login",
     response_model=TokenOut,
@@ -121,15 +124,14 @@ async def login(body: LoginIn, db: AsyncSession = Depends(get_db)) -> TokenOut:
 
 # ── Refresh ───────────────────────────────────────────────────────────────────
 
+
 @router.post(
     "/refresh",
     response_model=TokenOut,
     summary="Exchange a refresh token for a new token pair",
 )
 async def refresh(body: RefreshIn, db: AsyncSession = Depends(get_db)) -> TokenOut:
-    result = await db.execute(
-        select(RefreshToken).where(RefreshToken.token == body.refresh_token)
-    )
+    result = await db.execute(select(RefreshToken).where(RefreshToken.token == body.refresh_token))
     rt: RefreshToken | None = result.scalar_one_or_none()
 
     if rt is None or rt.revoked:
@@ -174,6 +176,7 @@ async def refresh(body: RefreshIn, db: AsyncSession = Depends(get_db)) -> TokenO
 
 # ── Logout ────────────────────────────────────────────────────────────────────
 
+
 @router.post(
     "/logout",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -184,9 +187,7 @@ async def logout(
     _current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> None:
-    result = await db.execute(
-        select(RefreshToken).where(RefreshToken.token == body.refresh_token)
-    )
+    result = await db.execute(select(RefreshToken).where(RefreshToken.token == body.refresh_token))
     rt: RefreshToken | None = result.scalar_one_or_none()
 
     if rt is not None and not rt.revoked:

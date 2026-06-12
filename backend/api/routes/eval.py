@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 # ── Background task ───────────────────────────────────────────────────────────
 
+
 async def _run_eval_background(
     run_id: uuid.UUID,
     collection: str,
@@ -75,6 +76,7 @@ async def _run_eval_background(
 
 # ── POST /eval/run ────────────────────────────────────────────────────────────
 
+
 @router.post(
     "/run",
     response_model=EvalRunOut,
@@ -111,7 +113,10 @@ async def start_eval_run(
 
     logger.info(
         "EvalRun %s started: collection='%s' items=%d user=%s",
-        run.id, body.collection, len(body.test_set), current_user.id,
+        run.id,
+        body.collection,
+        len(body.test_set),
+        current_user.id,
     )
 
     return EvalRunOut(
@@ -123,6 +128,7 @@ async def start_eval_run(
 
 
 # ── GET /eval/metrics ─────────────────────────────────────────────────────────
+
 
 @router.get(
     "/metrics",
@@ -179,6 +185,7 @@ async def get_metrics(
 
 
 # ── GET /eval/history ─────────────────────────────────────────────────────────
+
 
 @router.get(
     "/history",

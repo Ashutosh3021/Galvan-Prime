@@ -23,6 +23,7 @@ router = APIRouter(prefix="/profile", tags=["profile"])
 
 # ── GET /profile/me ───────────────────────────────────────────────────────────
 
+
 @router.get(
     "/me",
     response_model=ProfileOut,
@@ -58,6 +59,7 @@ async def get_profile(
 
 
 # ── PUT /profile/me ───────────────────────────────────────────────────────────
+
 
 @router.put(
     "/me",

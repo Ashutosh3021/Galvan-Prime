@@ -36,6 +36,7 @@ async def auth_headers(client: AsyncClient) -> dict:
 
 # ── Profile tests ─────────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 class TestProfile:
     async def test_get_profile_returns_user_data(self, client: AsyncClient, auth_headers):
@@ -77,6 +78,7 @@ class TestProfile:
 
 # ── Settings tests ────────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 class TestSettings:
     async def test_get_settings_returns_defaults(self, client: AsyncClient, auth_headers):
@@ -112,7 +114,11 @@ class TestSettings:
 
     async def test_update_partial_preserves_other_fields(self, client: AsyncClient, auth_headers):
         # Set a known baseline
-        await client.put("/settings", json={"llm_provider": "gemini", "eval_auto_run": True}, headers=auth_headers)
+        await client.put(
+            "/settings",
+            json={"llm_provider": "gemini", "eval_auto_run": True},
+            headers=auth_headers,
+        )
         # Update only one field
         resp = await client.put("/settings", json={"chunk_strategy": "fixed"}, headers=auth_headers)
         assert resp.status_code == 200

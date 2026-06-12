@@ -24,12 +24,14 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Chunk:
     """A single text chunk with its provenance."""
+
     text: str
     source: str
-    page: Optional[int]   # None for URL/TXT; int for PDFs
+    page: Optional[int]  # None for URL/TXT; int for PDFs
 
 
 # ── Fixed-size chunker ────────────────────────────────────────────────────────
+
 
 def fixed_chunk(pages: list[RawPage], chunk_size: int = 512, overlap: int = 64) -> list[Chunk]:
     """
@@ -62,7 +64,10 @@ def fixed_chunk(pages: list[RawPage], chunk_size: int = 512, overlap: int = 64) 
 
     logger.info(
         "fixed_chunk: %d page(s) → %d chunks (size=%d, overlap=%d)",
-        len(pages), len(chunks), chunk_size, overlap,
+        len(pages),
+        len(chunks),
+        chunk_size,
+        overlap,
     )
     return chunks
 
@@ -133,6 +138,8 @@ def semantic_chunk(
 
     logger.info(
         "semantic_chunk: %d page(s) → %d chunks (target=%d)",
-        len(pages), len(chunks), target_size,
+        len(pages),
+        len(chunks),
+        target_size,
     )
     return chunks
