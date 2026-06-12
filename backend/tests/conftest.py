@@ -8,11 +8,6 @@ session, ensuring isolation.
 
 import os
 
-# Point config to a test-safe .env before anything imports Settings
-os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
-os.environ.setdefault("SECRET_KEY", "test-secret-key-minimum-16-chars")
-os.environ.setdefault("ENVIRONMENT", "development")
-
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import (
@@ -23,6 +18,12 @@ from sqlalchemy.ext.asyncio import (
 
 import db.models  # noqa: F401 — registers all ORM models
 from db.base import Base
+
+# Point config to a test-safe .env before the lazy imports inside fixtures
+# (e.g. `from main import app`) pick up Settings.
+os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
+os.environ.setdefault("SECRET_KEY", "test-secret-key-minimum-16-chars")
+os.environ.setdefault("ENVIRONMENT", "development")
 
 # ── In-memory SQLite engine ───────────────────────────────────────────────────
 
