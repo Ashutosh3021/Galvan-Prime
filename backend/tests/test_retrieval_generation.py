@@ -25,7 +25,6 @@ Covers:
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -228,12 +227,14 @@ class TestContextBuilder:
 class TestMessageBuilder:
     def test_system_message_is_first(self):
         from langchain_core.messages import SystemMessage
+
         from core.generation.chain import _build_messages
         messages = _build_messages([], "question?", "context")
         assert isinstance(messages[0], SystemMessage)
 
     def test_human_message_is_last(self):
         from langchain_core.messages import HumanMessage
+
         from core.generation.chain import _build_messages
         messages = _build_messages([], "question?", "some context")
         assert isinstance(messages[-1], HumanMessage)
@@ -242,6 +243,7 @@ class TestMessageBuilder:
 
     def test_history_inserted_between_system_and_human(self):
         from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+
         from core.generation.chain import _build_messages
         history = [HumanMessage(content="prev Q"), AIMessage(content="prev A")]
         messages = _build_messages(history, "follow-up?", "ctx")
@@ -272,7 +274,7 @@ class TestLLMProvider:
             mock_settings.return_value.openai_api_key = ""
             with patch("core.generation.llm.ChatGoogleGenerativeAI") as mock_cls:
                 mock_cls.return_value = MagicMock()
-                llm = get_llm()
+                get_llm()
                 mock_cls.assert_called_once()
         reset_llm_cache()
 
@@ -284,7 +286,7 @@ class TestLLMProvider:
             mock_settings.return_value.openai_api_key = "fake-openai-key"
             with patch("core.generation.llm.ChatOpenAI") as mock_cls:
                 mock_cls.return_value = MagicMock()
-                llm = get_llm()
+                get_llm()
                 mock_cls.assert_called_once()
         reset_llm_cache()
 

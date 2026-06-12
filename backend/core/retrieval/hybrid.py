@@ -23,8 +23,6 @@ from __future__ import annotations
 import asyncio
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from functools import partial
-from typing import Optional
 
 from core.retrieval.vectorstore import ChromaStore, SearchResult
 

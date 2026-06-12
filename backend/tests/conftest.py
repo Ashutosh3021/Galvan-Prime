@@ -13,7 +13,6 @@ os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-minimum-16-chars")
 os.environ.setdefault("ENVIRONMENT", "development")
 
-import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import (
@@ -22,8 +21,8 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from db.base import Base
 import db.models  # noqa: F401 — registers all ORM models
+from db.base import Base
 
 # ── In-memory SQLite engine ───────────────────────────────────────────────────
 
@@ -69,8 +68,8 @@ async def client(db_session: AsyncSession):
     Overrides the get_db dependency so every request uses the same
     rolled-back test session.
     """
-    from main import app
     from api.deps import get_db
+    from main import app
 
     async def override_get_db():
         yield db_session

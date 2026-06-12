@@ -97,8 +97,9 @@ class TestLoaders:
         assert "Important content" in pages[0].text
 
     def test_load_url_http_error_raises(self):
-        from core.ingestion.loaders import load_url
         import requests as req
+
+        from core.ingestion.loaders import load_url
         with patch("core.ingestion.loaders.requests.get") as mock_get:
             mock_get.side_effect = req.RequestException("timeout")
             with pytest.raises(ValueError, match="Failed to fetch"):
@@ -154,8 +155,9 @@ class TestChunkers:
 
 def _mock_ingest_doc(doc_id=None):
     """Return a mock Document ORM-like object."""
-    from db.models.document import Document
     from datetime import datetime, timezone
+
+    from db.models.document import Document
     doc = MagicMock(spec=Document)
     doc.id = doc_id or uuid.uuid4()
     doc.filename = "test.txt"

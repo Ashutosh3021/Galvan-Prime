@@ -25,7 +25,7 @@ from dataclasses import dataclass, field
 from functools import partial
 from typing import Optional
 
-from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langchain_core.output_parsers import StrOutputParser
 
 from config import get_settings

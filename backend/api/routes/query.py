@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from api.deps import get_current_user, get_db
-from core.generation.chain import Citation as ChainCitation, run_rag_chain
+from core.generation.chain import run_rag_chain
 from db.models.query_log import QueryLog
 from db.models.user import User
 from schemas.query import Citation, HistoryOut, QueryIn, QueryOut

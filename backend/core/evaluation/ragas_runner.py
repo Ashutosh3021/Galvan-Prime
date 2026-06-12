@@ -24,8 +24,6 @@ import asyncio
 import logging
 import uuid
 from concurrent.futures import ThreadPoolExecutor
-from functools import partial
-from typing import Any
 
 from datasets import Dataset  # type: ignore
 
@@ -117,8 +115,8 @@ async def run_evaluation(
 
     # ── Step 3: build RAGAS-compatible LLM + embeddings wrappers ─────────────
     try:
-        from ragas.llms import LangchainLLMWrapper  # type: ignore
         from ragas.embeddings import LangchainEmbeddingsWrapper  # type: ignore
+        from ragas.llms import LangchainLLMWrapper  # type: ignore
 
         try:
             from langchain_huggingface import HuggingFaceEmbeddings  # type: ignore

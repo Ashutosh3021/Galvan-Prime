@@ -9,7 +9,6 @@ Covers:
   - core/security helpers (hash/verify, JWT round-trip)
 """
 
-from datetime import datetime, timedelta, timezone
 
 import pytest
 import pytest_asyncio
@@ -22,7 +21,6 @@ from core.security import (
     hash_password,
     verify_password,
 )
-
 
 # ── Security unit tests ───────────────────────────────────────────────────────
 

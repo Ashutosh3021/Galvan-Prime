@@ -11,14 +11,23 @@ from __future__ import annotations
 import uuid
 from typing import Literal, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    UploadFile,
+    status,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from api.deps import get_current_user, get_db
+from config import get_settings
 from core.ingestion.service import get_collections, ingest_document
 from core.retrieval.vectorstore import ChromaStore
-from config import get_settings
 from db.models.document import Document
 from db.models.user import User
 from schemas.ingest import CollectionOut, IngestOut

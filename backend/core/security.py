@@ -25,14 +25,16 @@ def hash_password(plain: str) -> str:
     password so longer passwords are safe, then base64-encode to keep the
     intermediate value printable/ASCII-safe for the bcrypt salt routine.
     """
-    import base64, hashlib
+    import base64
+    import hashlib
     digest = base64.b64encode(hashlib.sha256(plain.encode()).digest())
     return bcrypt.hashpw(digest, bcrypt.gensalt()).decode()
 
 
 def verify_password(plain: str, hashed: str) -> bool:
     """Return True if *plain* matches the stored bcrypt *hashed* value."""
-    import base64, hashlib
+    import base64
+    import hashlib
     digest = base64.b64encode(hashlib.sha256(plain.encode()).digest())
     return bcrypt.checkpw(digest, hashed.encode())
 

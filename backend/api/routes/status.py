@@ -17,8 +17,8 @@ import time
 from typing import Literal
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.deps import get_db
 from config import get_settings
@@ -50,7 +50,6 @@ async def _probe_postgres(db: AsyncSession) -> ServiceStatus:
 async def _probe_chroma() -> ServiceStatus:
     t0 = time.monotonic()
     try:
-        import asyncio as _asyncio
 
         def _check():
             import chromadb

@@ -16,9 +16,9 @@ from sqlalchemy.ext.asyncio import create_async_engine
 # ── Make sure the backend root is on sys.path ─────────────────────────────────
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
+import db.models  # noqa: E402, F401  ← registers all models with Base.metadata
 from config import get_settings  # noqa: E402
 from db.base import Base  # noqa: E402
-import db.models  # noqa: E402, F401  ← registers all models with Base.metadata
 
 settings = get_settings()
 

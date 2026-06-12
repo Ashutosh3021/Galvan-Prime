@@ -18,7 +18,7 @@ Covers:
 from __future__ import annotations
 
 import uuid
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 import pytest_asyncio
@@ -182,7 +182,7 @@ class TestRunEvaluation:
     async def test_no_llm_key_returns_none_scores(self):
         """When LLM is not configured, scores should all be None (not crash)."""
         from core.evaluation.ragas_runner import run_evaluation
-        from core.generation.chain import Citation, RAGResult
+        from core.generation.chain import RAGResult
 
         mock_rag = RAGResult(
             answer="answer",
@@ -275,8 +275,9 @@ class TestGetMetrics:
             )
         run_id = resp.json()["run_id"]
 
-        from db.models.eval_result import EvalRun
         from sqlalchemy.future import select
+
+        from db.models.eval_result import EvalRun
 
         result = await db_session.execute(
             select(EvalRun).where(EvalRun.id == uuid.UUID(run_id))

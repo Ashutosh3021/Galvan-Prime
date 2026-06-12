@@ -8,7 +8,6 @@ GET  /eval/history    — list all eval runs for the current user
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import uuid
 
@@ -17,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from api.deps import get_current_user, get_db
-from core.evaluation.metrics import METRIC_TARGETS, MetricResult
+from core.evaluation.metrics import METRIC_TARGETS
 from core.evaluation.ragas_runner import run_evaluation
 from db.models.eval_result import EvalRun
 from db.models.user import User

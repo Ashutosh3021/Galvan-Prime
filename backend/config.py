@@ -5,7 +5,7 @@ Uses Pydantic Settings so every value is typed and validated at startup.
 
 from functools import lru_cache
 
-from pydantic import EmailStr, field_validator
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
