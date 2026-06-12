@@ -41,19 +41,6 @@ body {
   outline: none;
 }
 
-/* ─── Material Symbols Global Font Variation ─── */
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  font-size: 24px;
-  line-height: 1;
-  vertical-align: middle;
-  user-select: none;
-}
-
-.icon-fill {
-  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
-
 /* ─── AI Glow Effect ─── */
 .ai-glow:hover {
   box-shadow: 0 0 15px 2px rgba(255, 102, 0, 0.4);

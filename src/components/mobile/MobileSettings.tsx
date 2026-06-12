@@ -1,4 +1,5 @@
 import { useSettingsForm } from '../../hooks/useSettingsForm';
+import { Icon } from '../ui/Icon';
 import type { EnvVar } from '../../types';
 
 const envVars: EnvVar[] = [
@@ -8,12 +9,11 @@ const envVars: EnvVar[] = [
 ];
 
 export default function MobileSettings() {
-  const { form, showKey, saved, setField, toggleShowKey, handleSave } = useSettingsForm();
+  const { form, showKey, saved, setField, toggleShowKey, handleSave, handleReset } = useSettingsForm();
 
   return (
     <main className="flex-1 flex flex-col w-full max-w-[1440px] mx-auto px-4 md:px-8 py-8">
       <form onSubmit={handleSave} className="flex flex-col gap-6">
-
         <div>
           <h1 className="text-[32px] font-bold leading-tight text-on-surface">Settings</h1>
           <p className="text-[14px] text-on-surface-variant mt-1">Configure LLM pipeline connections and search parameters.</p>
@@ -22,7 +22,7 @@ export default function MobileSettings() {
         {/* LLM Provider */}
         <section className="bg-surface-container border border-surface-container-high rounded-lg p-4">
           <h2 className="text-[20px] font-semibold text-on-surface mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-secondary">psychology</span>
+            <Icon name="psychology" size={20} className="text-secondary-container" />
             LLM Provider
           </h2>
           <div className="space-y-4">
@@ -36,7 +36,9 @@ export default function MobileSettings() {
                   <option value="gpt4o">GPT-4o</option>
                   <option value="claude-35">Claude 3.5 Sonnet</option>
                 </select>
-                <span className="material-symbols-outlined absolute right-3 top-2.5 text-on-surface-variant pointer-events-none" style={{ fontSize: '20px' }}>expand_more</span>
+                <span className="absolute right-3 top-2.5 text-on-surface-variant pointer-events-none">
+                  <Icon name="expand_more" size={18} />
+                </span>
               </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -45,7 +47,7 @@ export default function MobileSettings() {
                 <input type={showKey ? 'text' : 'password'} value={form.apiKey} onChange={e => setField('apiKey', e.target.value)}
                   className="w-full bg-surface-container-lowest border border-surface-container-high rounded font-mono text-[13px] text-on-surface py-2 px-3 focus:outline-none focus:border-primary-container" />
                 <button type="button" onClick={toggleShowKey} className="absolute right-3 text-on-surface-variant hover:text-primary-container transition-colors">
-                  <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{showKey ? 'visibility' : 'visibility_off'}</span>
+                  <Icon name={showKey ? 'visibility' : 'visibility_off'} size={18} />
                 </button>
               </div>
             </div>
@@ -55,24 +57,19 @@ export default function MobileSettings() {
         {/* Vector Store */}
         <section className="bg-surface-container border border-surface-container-high rounded-lg p-4">
           <h2 className="text-[20px] font-semibold text-on-surface mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-secondary">database</span>
+            <Icon name="database" size={20} className="text-secondary-container" />
             Vector Store
           </h2>
           <div className="space-y-4">
             <div className="flex flex-col gap-2">
               <label className="text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant uppercase">Provider</label>
               <div className="grid grid-cols-2 gap-3">
-                {[
-                  { id: 'chroma',   label: 'ChromaDB (Local)', isCloud: false },
-                  { id: 'pinecone', label: 'Pinecone (Cloud)',  isCloud: true  },
-                ].map(db => {
+                {[{ id: 'chroma', label: 'ChromaDB (Local)', isCloud: false }, { id: 'pinecone', label: 'Pinecone (Cloud)', isCloud: true }].map(db => {
                   const isSelected = form.vectorDB === db.id;
                   return (
-                    <label key={db.id} className={`flex items-center justify-center gap-2 p-3 border rounded cursor-pointer transition-colors ${
-                      isSelected ? 'border-primary-container bg-primary-container/10 text-primary-container' : 'border-surface-container-high text-on-surface-variant hover:border-primary-container/50'
-                    }`}>
-                      <input type="radio" name="vector_store" value={db.id} checked={isSelected} onChange={() => setField('vectorDB', db.id)} className="hidden" />
-                      {db.isCloud && <span className="material-symbols-outlined text-secondary" style={{ fontSize: '16px' }}>cloud</span>}
+                    <label key={db.id} className={`flex items-center justify-center gap-2 p-3 border rounded cursor-pointer transition-colors ${isSelected ? 'border-primary-container bg-primary-container/10 text-primary-container' : 'border-surface-container-high text-on-surface-variant hover:border-primary-container/50'}`}>
+                      <input type="radio" name="vector_store" value={db.id} checked={isSelected} onChange={() => setField('vectorDB', db.id)} className="sr-only" />
+                      {db.isCloud && <Icon name="cloud" size={14} className="text-secondary-container" />}
                       <span className="text-[14px]">{db.label}</span>
                     </label>
                   );
@@ -90,7 +87,7 @@ export default function MobileSettings() {
         {/* Search Config */}
         <section className="bg-surface-container border border-surface-container-high rounded-lg p-4">
           <h2 className="text-[20px] font-semibold text-on-surface mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-secondary">tune</span>
+            <Icon name="tune" size={20} className="text-secondary-container" />
             Search Configuration
           </h2>
           <div className="flex flex-col gap-4">
@@ -110,30 +107,27 @@ export default function MobileSettings() {
         {/* Connection Status */}
         <section className="bg-surface-container border border-surface-container-high rounded-lg p-4">
           <h2 className="text-[20px] font-semibold text-on-surface mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-secondary">power</span>
+            <Icon name="power" size={20} className="text-secondary-container" />
             Connection Status
           </h2>
           <ul className="space-y-2">
             {envVars.map(ev => (
               <li key={ev.key} className="flex items-center justify-between p-2 rounded bg-surface-container-lowest border border-surface-container-high">
                 <span className="font-mono text-[13px] text-on-surface-variant">{ev.key}</span>
-                <span className="material-symbols-outlined text-[#4ae176]" style={{ fontSize: '18px', fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                <Icon name="check_circle" size={18} filled className="text-[#4ae176]" />
               </li>
             ))}
           </ul>
         </section>
 
-        {/* Actions */}
         <div className="flex flex-col sm:flex-row-reverse items-center gap-4 pt-2">
-          <button type="submit"
-            className="w-full sm:w-auto bg-primary-container hover:brightness-110 text-on-primary text-[16px] font-semibold py-3 px-8 rounded-lg transition-all shadow-lg shadow-primary-container/20">
+          <button type="submit" className="w-full sm:w-auto bg-primary-container hover:brightness-110 text-on-primary text-[16px] font-semibold py-3 px-8 rounded-lg transition-all shadow-lg shadow-primary-container/20">
             {saved ? '✓ Saved!' : 'Save Changes'}
           </button>
-          <button type="button" className="text-[14px] text-on-surface-variant hover:text-on-surface transition-colors underline underline-offset-4">
+          <button type="button" onClick={handleReset} className="text-[14px] text-on-surface-variant hover:text-on-surface transition-colors underline underline-offset-4">
             Reset to Defaults
           </button>
         </div>
-
       </form>
     </main>
   );

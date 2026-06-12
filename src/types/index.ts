@@ -1,15 +1,129 @@
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 //  Shared application-wide TypeScript types
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 
-/** Navigation item used in sidebars / top navs */
+// ─── Navigation ──────────────────────────────────────────────────────────────
+
 export interface NavItem {
   label: string;
   to: string;
   icon: string;
 }
 
-/** A RAG metric card value */
+// ─── API — Ingest ─────────────────────────────────────────────────────────────
+
+export interface IngestRequest {
+  file: File;
+  chunk_strategy: 'fixed' | 'semantic';
+  collection: string;
+}
+
+export interface IngestResponse {
+  doc_id: string;
+  chunks: number;
+  status: 'success' | 'failed';
+}
+
+/** A document record returned from GET /documents */
+export interface DocumentRecord {
+  doc_id: string;
+  source: string;
+  chunks: number;
+  collection: string;
+  created_at: string;
+}
+
+// ─── API — Query ──────────────────────────────────────────────────────────────
+
+export interface QueryRequest {
+  question: string;
+  collection: string;
+  session_id: string;
+}
+
+export interface QueryCitation {
+  source: string;
+  page: number;
+  chunk: string;
+}
+
+export interface QueryResponse {
+  answer: string;
+  citations: QueryCitation[];
+  session_id: string;
+}
+
+// ─── API — Eval ───────────────────────────────────────────────────────────────
+
+export interface EvalMetricsHistory {
+  timestamp: string;
+  faithfulness: number;
+  answer_relevancy: number;
+  context_recall: number;
+  context_precision: number;
+}
+
+export interface EvalMetrics {
+  faithfulness: number;
+  answer_relevancy: number;
+  context_recall: number;
+  context_precision: number;
+  history: EvalMetricsHistory[];
+}
+
+export interface EvalRunResponse {
+  status: 'running';
+  job_id: string;
+}
+
+// ─── API — Collections ────────────────────────────────────────────────────────
+
+export interface Collection {
+  id: string;
+  name: string;
+  document_count: number;
+  created_at: string;
+}
+
+// ─── API — Settings ───────────────────────────────────────────────────────────
+
+export interface PersistedSettings {
+  llmProvider: string;
+  defaultChunkStrategy: 'fixed' | 'semantic';
+  defaultCollection: string;
+}
+
+// ─── UI — Chat ────────────────────────────────────────────────────────────────
+
+export type MessageRole = 'user' | 'assistant';
+
+export interface ChatMessage {
+  id: string;
+  role: MessageRole;
+  content: string;
+  citations?: QueryCitation[];
+  timestamp: string;
+}
+
+// ─── UI — Ingestion job (local queue state) ───────────────────────────────────
+
+export type JobStatus = 'success' | 'processing' | 'failed';
+export type FileType = 'pdf' | 'url' | 'txt' | 'markdown' | 'error';
+
+export interface IngestionJob {
+  id: string;
+  filename: string;
+  fileType: FileType;
+  status: JobStatus;
+  chunks?: number;
+  progress?: number;
+  timestamp: string;
+  errorMessage?: string;
+  collection: string;
+}
+
+// ─── UI — Metric card ─────────────────────────────────────────────────────────
+
 export interface MetricCard {
   label: string;
   value: number;
@@ -18,7 +132,28 @@ export interface MetricCard {
   icon: string;
 }
 
-/** System service health status */
+// ─── UI — Settings form ───────────────────────────────────────────────────────
+
+export interface SettingsFormState {
+  llmProvider: string;
+  apiKey: string;
+  vectorDB: string;
+  envRegion: string;
+  indexName: string;
+  hybridWeight: number;
+}
+
+// ─── UI — Query session sidebar ───────────────────────────────────────────────
+
+export interface QuerySession {
+  id: string;
+  label: string;
+  isActive?: boolean;
+  isSaved?: boolean;
+}
+
+// ─── UI — misc ────────────────────────────────────────────────────────────────
+
 export type ServiceStatus = 'up' | 'degraded' | 'down';
 
 export interface ServiceHealth {
@@ -27,67 +162,23 @@ export interface ServiceHealth {
   icon: string;
 }
 
-/** Environment variable status */
 export interface EnvVar {
   key: string;
   loaded: boolean;
 }
 
-/** Chat message types */
-export type MessageRole = 'user' | 'bot';
-
-export interface Citation {
-  filename: string;
-  reference: string;
-  icon: string;
-}
-
-export interface ChatMessage {
-  id: string;
-  role: MessageRole;
-  content: string;
-  citations?: Citation[];
-  isStreaming?: boolean;
-  timestamp: string;
-}
-
-/** Session in the query sidebar */
-export interface QuerySession {
-  id: string;
-  label: string;
-  isActive?: boolean;
-  isSaved?: boolean;
-}
-
-/** LLM provider option */
 export interface LLMProvider {
   id: string;
   name: string;
   description: string;
 }
 
-/** Vector DB option */
 export interface VectorDB {
   id: string;
   name: string;
   type: 'local' | 'cloud';
 }
 
-/** Ingestion job status */
-export type JobStatus = 'success' | 'processing' | 'failed';
-
-export interface IngestionJob {
-  id: string;
-  filename: string;
-  fileType: 'pdf' | 'url' | 'markdown' | 'error';
-  status: JobStatus;
-  chunks?: number;
-  progress?: number;
-  timestamp: string;
-  errorMessage?: string;
-}
-
-/** Eval test result row */
 export interface EvalResult {
   question: string;
   faithfulness: number;
@@ -96,25 +187,13 @@ export interface EvalResult {
   timestamp: string;
 }
 
-/** API endpoint definition */
 export interface ApiEndpoint {
   id: string;
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
   path: string;
   description: string;
-  parameters?: ApiParameter[];
-  exampleRequest?: string;
-  exampleResponse?: string;
 }
 
-export interface ApiParameter {
-  name: string;
-  type: string;
-  description: string;
-  required?: boolean;
-}
-
-/** User / Session Management */
 export interface UserProfile {
   id: string;
   name: string;
@@ -123,33 +202,9 @@ export interface UserProfile {
   isActive: boolean;
 }
 
-export interface UserSession {
-  id: string;
-  device: string;
-  deviceIcon: string;
-  lastActive: string;
-}
-
-export interface DocumentCollection {
-  id: string;
-  name: string;
-  documentCount: number;
+// Legacy alias kept for backward compat with existing components
+export interface Citation {
+  filename: string;
+  reference: string;
   icon: string;
-}
-
-/** Ingestion form state */
-export interface IngestFormState {
-  url: string;
-  chunkStrategy: 'fixed' | 'semantic' | 'character';
-  targetCollection: string;
-}
-
-/** Settings form state */
-export interface SettingsFormState {
-  llmProvider: string;
-  apiKey: string;
-  vectorDB: string;
-  envRegion: string;
-  indexName: string;
-  hybridWeight: number;
 }

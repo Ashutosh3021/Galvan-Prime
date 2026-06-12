@@ -1,4 +1,3 @@
-// src/components/shared/DesktopTopNav.tsx
 import { Link, useLocation } from 'react-router-dom';
 
 const links = [
@@ -24,12 +23,12 @@ export default function DesktopTopNav() {
         <Link
           to="/home"
           aria-label="GalvanR.A.G. — Go to home"
-          className="text-title-md font-black text-primary tracking-tighter shrink-0"
+          className="text-title-md font-black text-primary-container tracking-tighter shrink-0"
         >
           GalvanR.A.G.
         </Link>
 
-        {/* Nav links — naturally spaced cluster, matching reference */}
+        {/* Nav links */}
         <div className="flex items-center space-x-1 h-full" role="list">
           {links.map(({ to, label }) => {
             const isActive = pathname === to;
@@ -39,11 +38,13 @@ export default function DesktopTopNav() {
                 to={to}
                 role="listitem"
                 aria-current={isActive ? 'page' : undefined}
-                className={`h-full flex items-center px-3 py-2 text-label-caps font-label-caps relative transition-all
+                className={`
+                  h-full flex items-center px-3 py-2 text-label-caps font-label-caps relative transition-all
                   ${isActive
-                    ? 'text-primary font-bold border-b-2 border-primary'
-                    : 'text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 rounded'
-                  }`}
+                    ? 'text-primary-container font-bold border-b-2 border-primary-container'
+                    : 'text-on-surface-variant hover:text-primary-container hover:bg-surface-variant/50 rounded'
+                  }
+                `}
               >
                 {label}
               </Link>
@@ -51,9 +52,7 @@ export default function DesktopTopNav() {
           })}
         </div>
 
-        {/* Right side placeholder keeps brand left / links centred */}
         <div className="w-[160px]" aria-hidden="true" />
-
       </div>
     </nav>
   );

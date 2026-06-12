@@ -1,12 +1,12 @@
-// src/components/shared/MobileBottomNav.tsx
 import { Link, useLocation } from 'react-router-dom';
+import { Icon } from '../ui/Icon';
 
 const navItems = [
-  { label: 'Home',        to: '/home',        icon: 'home'        },
-  { label: 'Ingest',      to: '/ingest',      icon: 'upload_file' },
+  { label: 'Home',        to: '/home',        icon: 'home'         },
+  { label: 'Ingest',      to: '/ingest',      icon: 'upload_file'  },
   { label: 'Query',       to: '/query',       icon: 'search_check' },
-  { label: 'Eval',        to: '/eval',        icon: 'assessment'  },
-  { label: 'Collections', to: '/collections', icon: 'folder_open' },
+  { label: 'Eval',        to: '/eval',        icon: 'assessment'   },
+  { label: 'Collections', to: '/collections', icon: 'folder_open'  },
 ];
 
 export default function MobileBottomNav() {
@@ -28,20 +28,13 @@ export default function MobileBottomNav() {
             to={item.to}
             aria-label={item.label}
             aria-current={isActive ? 'page' : undefined}
-            className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5
+            className={`
+              flex-1 flex flex-col items-center justify-center py-2 gap-0.5
               transition-colors active:scale-90 duration-200
-              ${isActive ? 'text-primary' : 'text-on-surface-variant hover:text-primary hover:bg-white/5'}`}
+              ${isActive ? 'text-primary-container' : 'text-on-surface-variant hover:text-primary-container hover:bg-white/5'}
+            `}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
-                fontSize: '24px',
-              }}
-              aria-hidden="true"
-            >
-              {item.icon}
-            </span>
+            <Icon name={item.icon} size={22} filled={isActive} />
             <span className="text-[10px] font-bold leading-none tracking-wide">
               {item.label}
             </span>
