@@ -101,7 +101,6 @@ jobs:
             --cov=. \
             --cov-report=xml \
             --cov-report=term-missing \
-            --cov-omit="tests/*,db/migrations/*" \
             -v \
             --tb=short \
             -q
