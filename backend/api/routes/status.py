@@ -2,7 +2,7 @@
 api/routes/status.py — System health / status endpoint.
 
 GET /status — returns health of the API and downstream services
-              (PostgreSQL, ChromaDB, Pinecone, LLM).
+              (ChromaDB, Pinecone, LLM).
 
 Each service probe is run with a timeout; a failed probe marks that
 service as 'down' but does NOT crash the endpoint — the API itself
@@ -16,11 +16,8 @@ import logging
 import time
 from typing import Literal
 
-from fastapi import APIRouter, Depends
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter
 
-from api.deps import get_db
 from config import get_settings
 from schemas.status import ServiceStatus, StatusOut
 
@@ -28,24 +25,12 @@ router = APIRouter(prefix="/status", tags=["status"])
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-# Record the process start time once at module load
 _START_TIME = time.monotonic()
 _API_VERSION = "1.0.0"
 _PROBE_TIMEOUT = 3.0  # seconds per probe
 
 
 # ── Probe helpers ─────────────────────────────────────────────────────────────
-
-
-async def _probe_postgres(db: AsyncSession) -> ServiceStatus:
-    t0 = time.monotonic()
-    try:
-        await asyncio.wait_for(db.execute(text("SELECT 1")), timeout=_PROBE_TIMEOUT)
-        latency = int((time.monotonic() - t0) * 1000)
-        return ServiceStatus(name="postgres", status="healthy", latency_ms=latency)
-    except Exception as exc:
-        logger.warning("Postgres probe failed: %s", exc)
-        return ServiceStatus(name="postgres", status="down", latency_ms=None)
 
 
 async def _probe_chroma() -> ServiceStatus:
@@ -97,10 +82,6 @@ async def _probe_pinecone() -> ServiceStatus:
 
 
 async def _probe_llm() -> ServiceStatus:
-    """
-    Light probe: just verify that an API key is configured.
-    A real call would be expensive; we only confirm the key exists.
-    """
     has_key = bool(settings.gemini_api_key or settings.openai_api_key)
     s: Literal["healthy", "degraded"] = "healthy" if has_key else "degraded"
     return ServiceStatus(name="llm", status=s, latency_ms=None)
@@ -114,13 +95,11 @@ async def _probe_llm() -> ServiceStatus:
     response_model=StatusOut,
     summary="System health status",
 )
-async def get_status(db: AsyncSession = Depends(get_db)) -> StatusOut:
+async def get_status() -> StatusOut:
     """
-    Run all service probes concurrently and return a consolidated
-    health report.  The API is marked 'degraded' if any probe fails.
+    Run all service probes concurrently and return a consolidated health report.
     """
     results = await asyncio.gather(
-        _probe_postgres(db),
         _probe_chroma(),
         _probe_pinecone(),
         _probe_llm(),

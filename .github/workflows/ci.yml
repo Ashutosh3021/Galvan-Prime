@@ -47,8 +47,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-          cache-dependency-path: backend/requirements.txt
+          # No pip cache here — lint tools are installed directly, not from requirements.txt
 
       - name: Install lint tools
         run: pip install ruff==0.4.4 black==24.4.2 --no-cache-dir
@@ -72,9 +71,6 @@ jobs:
         working-directory: backend
 
     env:
-      # Test environment — SQLite in-memory, no real services needed
-      DATABASE_URL:  "sqlite+aiosqlite:///:memory:"
-      SECRET_KEY:    "ci-test-secret-key-32-chars-long!"
       ENVIRONMENT:   "development"
       LOG_LEVEL:     "WARNING"
       # Empty LLM keys — tests mock all LLM calls

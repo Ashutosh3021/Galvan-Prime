@@ -3,75 +3,51 @@ api/routes/eval.py — RAGAS evaluation endpoints.
 
 POST /eval/run        — start an async evaluation run (returns immediately)
 GET  /eval/metrics    — get per-metric scores for a completed run
-GET  /eval/history    — list all eval runs for the current user
+GET  /eval/history    — list all eval runs (in-memory, resets on restart)
 """
 
 from __future__ import annotations
 
 import logging
 import uuid
+from datetime import datetime, timezone
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, status
 
-from api.deps import get_current_user, get_db
 from core.evaluation.metrics import METRIC_TARGETS
 from core.evaluation.ragas_runner import run_evaluation
-from db.models.eval_result import EvalRun
-from db.models.user import User
 from schemas.eval import EvalRunIn, EvalRunOut, MetricOut
 
 router = APIRouter(prefix="/eval", tags=["eval"])
 logger = logging.getLogger(__name__)
 
+# In-memory store: run_id (str) → dict with run metadata + scores
+_runs: dict[str, dict] = {}
+
 
 # ── Background task ───────────────────────────────────────────────────────────
 
 
-async def _run_eval_background(
-    run_id: uuid.UUID,
-    collection: str,
-    test_set: list[dict],
-) -> None:
-    """
-    Background coroutine: run RAGAS evaluation and persist scores.
-    Opens its own DB session so it outlives the request session.
-    """
-    from db.session import AsyncSessionLocal
-
-    async with AsyncSessionLocal() as db:
-        try:
-            scores = await run_evaluation(
-                collection=collection,
-                test_set=test_set,
-                run_id=str(run_id),
-            )
-
-            result = await db.execute(select(EvalRun).where(EvalRun.id == run_id))
-            run: EvalRun | None = result.scalar_one_or_none()
-            if run is None:
-                logger.error("EvalRun %s not found after task completion", run_id)
-                return
-
-            run.faithfulness = scores.get("faithfulness")
-            run.answer_relevancy = scores.get("answer_relevancy")
-            run.context_recall = scores.get("context_recall")
-            run.context_precision = scores.get("context_precision")
-            run.status = "complete"
-            db.add(run)
-            await db.commit()
-            logger.info("EvalRun %s completed: %s", run_id, scores)
-
-        except Exception as exc:
-            logger.exception("EvalRun %s failed: %s", run_id, exc)
-            async with AsyncSessionLocal() as err_db:
-                result = await err_db.execute(select(EvalRun).where(EvalRun.id == run_id))
-                run = result.scalar_one_or_none()
-                if run:
-                    run.status = "failed"
-                    err_db.add(run)
-                    await err_db.commit()
+async def _run_eval_background(run_id: str, collection: str, test_set: list[dict]) -> None:
+    try:
+        scores = await run_evaluation(
+            collection=collection,
+            test_set=test_set,
+            run_id=run_id,
+        )
+        _runs[run_id].update(
+            {
+                "status": "complete",
+                "faithfulness": scores.get("faithfulness"),
+                "answer_relevancy": scores.get("answer_relevancy"),
+                "context_recall": scores.get("context_recall"),
+                "context_precision": scores.get("context_precision"),
+            }
+        )
+        logger.info("EvalRun %s completed: %s", run_id, scores)
+    except Exception as exc:
+        logger.exception("EvalRun %s failed: %s", run_id, exc)
+        _runs[run_id]["status"] = "failed"
 
 
 # ── POST /eval/run ────────────────────────────────────────────────────────────
@@ -86,44 +62,40 @@ async def _run_eval_background(
 async def start_eval_run(
     body: EvalRunIn,
     background_tasks: BackgroundTasks,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
 ) -> EvalRunOut:
-    """
-    Kick off a RAGAS evaluation run in the background.
-    Returns immediately with status='running' and the run_id.
-    """
-    run = EvalRun(
-        user_id=current_user.id,
-        collection=body.collection,
-        status="running",
-    )
-    db.add(run)
-    await db.flush()
-    await db.commit()
+    run_id = str(uuid.uuid4())
+    created_at = datetime.now(timezone.utc)
 
-    test_set_dicts = [item.model_dump() for item in body.test_set]
+    _runs[run_id] = {
+        "run_id": run_id,
+        "collection": body.collection,
+        "status": "running",
+        "faithfulness": None,
+        "answer_relevancy": None,
+        "context_recall": None,
+        "context_precision": None,
+        "created_at": created_at,
+    }
 
     background_tasks.add_task(
         _run_eval_background,
-        run_id=run.id,
+        run_id=run_id,
         collection=body.collection,
-        test_set=test_set_dicts,
+        test_set=[item.model_dump() for item in body.test_set],
     )
 
     logger.info(
-        "EvalRun %s started: collection='%s' items=%d user=%s",
-        run.id,
+        "EvalRun %s started: collection='%s' items=%d",
+        run_id,
         body.collection,
         len(body.test_set),
-        current_user.id,
     )
 
     return EvalRunOut(
-        run_id=run.id,
-        collection=run.collection,
-        status=run.status,  # type: ignore[arg-type]
-        created_at=run.created_at,
+        run_id=uuid.UUID(run_id),
+        collection=body.collection,
+        status="running",
+        created_at=created_at,
     )
 
 
@@ -137,51 +109,39 @@ async def start_eval_run(
 )
 async def get_metrics(
     run_id: uuid.UUID = Query(..., description="UUID of the eval run"),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
 ) -> list[MetricOut]:
-    result = await db.execute(
-        select(EvalRun).where(
-            EvalRun.id == run_id,
-            EvalRun.user_id == current_user.id,
-        )
-    )
-    run: EvalRun | None = result.scalar_one_or_none()
-
+    run = _runs.get(str(run_id))
     if run is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Eval run not found")
 
-    if run.status == "running":
+    if run["status"] == "running":
         raise HTTPException(
             status_code=status.HTTP_202_ACCEPTED,
             detail="Eval run is still in progress",
         )
 
-    if run.status == "failed":
+    if run["status"] == "failed":
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Eval run failed — check server logs",
         )
 
     metric_values: dict[str, float | None] = {
-        "faithfulness": run.faithfulness,
-        "answer_relevancy": run.answer_relevancy,
-        "context_recall": run.context_recall,
-        "context_precision": run.context_precision,
+        "faithfulness": run["faithfulness"],
+        "answer_relevancy": run["answer_relevancy"],
+        "context_recall": run["context_recall"],
+        "context_precision": run["context_precision"],
     }
 
-    metrics: list[MetricOut] = []
-    for name, score in metric_values.items():
-        target = METRIC_TARGETS.get(name, 0.0)  # type: ignore[arg-type]
-        metrics.append(
-            MetricOut(
-                metric=name,
-                score=round(score, 4) if score is not None else 0.0,
-                target=target,
-                passed=(score is not None and score >= target),
-            )
+    return [
+        MetricOut(
+            metric=name,
+            score=round(score, 4) if score is not None else 0.0,
+            target=METRIC_TARGETS.get(name, 0.0),  # type: ignore[arg-type]
+            passed=(score is not None and score >= METRIC_TARGETS.get(name, 0.0)),  # type: ignore[operator]
         )
-    return metrics
+        for name, score in metric_values.items()
+    ]
 
 
 # ── GET /eval/history ─────────────────────────────────────────────────────────
@@ -190,28 +150,19 @@ async def get_metrics(
 @router.get(
     "/history",
     response_model=list[EvalRunOut],
-    summary="List all eval runs for the current user",
+    summary="List all eval runs (in-memory, resets on restart)",
 )
-async def get_eval_history(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-) -> list[EvalRunOut]:
-    result = await db.execute(
-        select(EvalRun)
-        .where(EvalRun.user_id == current_user.id)
-        .order_by(EvalRun.created_at.desc())
-    )
-    runs = result.scalars().all()
+async def get_eval_history() -> list[EvalRunOut]:
     return [
         EvalRunOut(
-            run_id=run.id,
-            collection=run.collection,
-            status=run.status,  # type: ignore[arg-type]
-            faithfulness=run.faithfulness,
-            answer_relevancy=run.answer_relevancy,
-            context_recall=run.context_recall,
-            context_precision=run.context_precision,
-            created_at=run.created_at,
+            run_id=uuid.UUID(r["run_id"]),
+            collection=r["collection"],
+            status=r["status"],
+            faithfulness=r["faithfulness"],
+            answer_relevancy=r["answer_relevancy"],
+            context_recall=r["context_recall"],
+            context_precision=r["context_precision"],
+            created_at=r["created_at"],
         )
-        for run in runs
+        for r in sorted(_runs.values(), key=lambda x: x["created_at"], reverse=True)
     ]

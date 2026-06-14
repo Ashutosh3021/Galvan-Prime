@@ -13,13 +13,10 @@ Covers:
     - chain._build_messages       — message order
     - llm.get_llm                 — provider selection, missing key error
 
-  API (POST /query, GET /query/history):
+  API (POST /query):
     - happy path with mocked chain
     - empty collection → 422
     - LLM not configured → 503
-    - auth required
-    - history returns ordered turns
-    - history is session-scoped (other session returns empty)
 """
 
 from __future__ import annotations
@@ -28,27 +25,7 @@ import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-import pytest_asyncio
 from httpx import AsyncClient
-
-# ── Fixtures ──────────────────────────────────────────────────────────────────
-
-REGISTER = {
-    "email": "query_user@example.com",
-    "username": "queryuser",
-    "password": "Password123",
-}
-
-
-@pytest_asyncio.fixture
-async def auth_headers(client: AsyncClient) -> dict:
-    resp = await client.post("/auth/register", json=REGISTER)
-    if resp.status_code == 409:
-        resp = await client.post(
-            "/auth/login",
-            json={"email": REGISTER["email"], "password": REGISTER["password"]},
-        )
-    return {"Authorization": f"Bearer {resp.json()['access_token']}"}
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -92,7 +69,6 @@ class TestBM25Search:
         meta = [{} for _ in corpus]
         results = _bm25_search(corpus, meta, "retrieval generation documents", n_results=2)
         assert len(results) == 2
-        # The third sentence should rank highest
         top_idx = results[0][0]
         assert top_idx == 2
 
@@ -148,7 +124,6 @@ class TestRRFFusion:
             assert r.score > 0.0
 
     def test_deduplication_preserves_best_score(self):
-        """A chunk appearing in both lists should not be duplicated."""
         from core.retrieval.hybrid import _rrf_fuse
 
         text = "shared chunk"
@@ -192,11 +167,9 @@ class TestMemoryStore:
         assert self.store.get_history("s1")[0].content == "Question A"
 
     def test_overflow_drops_oldest_messages(self):
-        # max_turns=3 means maxlen=6 messages
         for i in range(4):
             self.store.add_user_message("s1", f"Q{i}")
             self.store.add_ai_message("s1", f"A{i}")
-        # Should have at most 6 messages
         assert self.store.message_count("s1") <= 6
 
     def test_clear_session(self):
@@ -331,7 +304,7 @@ class TestQueryEndpoint:
     def _session_id(self):
         return str(uuid.uuid4())
 
-    async def test_query_happy_path(self, client: AsyncClient, auth_headers):
+    async def test_query_happy_path(self, client: AsyncClient):
         sid = self._session_id()
         mock_result = _make_rag_result(session_id=sid)
         with patch(
@@ -340,7 +313,6 @@ class TestQueryEndpoint:
             resp = await client.post(
                 "/query",
                 json={"question": "What is RAG?", "collection": "docs", "session_id": sid},
-                headers=auth_headers,
             )
         assert resp.status_code == 200
         body = resp.json()
@@ -350,22 +322,14 @@ class TestQueryEndpoint:
         assert len(body["citations"]) == 1
         assert body["citations"][0]["source"] == "doc.pdf"
 
-    async def test_query_requires_auth(self, client: AsyncClient):
-        resp = await client.post(
-            "/query",
-            json={"question": "Q?", "collection": "docs", "session_id": str(uuid.uuid4())},
-        )
-        assert resp.status_code == 401
-
-    async def test_query_empty_question_returns_422(self, client: AsyncClient, auth_headers):
+    async def test_query_empty_question_returns_422(self, client: AsyncClient):
         resp = await client.post(
             "/query",
             json={"question": "", "collection": "docs", "session_id": str(uuid.uuid4())},
-            headers=auth_headers,
         )
         assert resp.status_code == 422
 
-    async def test_query_empty_collection_raises_422(self, client: AsyncClient, auth_headers):
+    async def test_query_empty_collection_raises_422(self, client: AsyncClient):
         with patch(
             "api.routes.query.run_rag_chain",
             new_callable=AsyncMock,
@@ -373,13 +337,16 @@ class TestQueryEndpoint:
         ):
             resp = await client.post(
                 "/query",
-                json={"question": "Q?", "collection": "empty-col", "session_id": str(uuid.uuid4())},
-                headers=auth_headers,
+                json={
+                    "question": "Q?",
+                    "collection": "empty-col",
+                    "session_id": str(uuid.uuid4()),
+                },
             )
         assert resp.status_code == 422
         assert "empty" in resp.json()["detail"]
 
-    async def test_query_llm_not_configured_returns_503(self, client: AsyncClient, auth_headers):
+    async def test_query_llm_not_configured_returns_503(self, client: AsyncClient):
         with patch(
             "api.routes.query.run_rag_chain",
             new_callable=AsyncMock,
@@ -388,75 +355,5 @@ class TestQueryEndpoint:
             resp = await client.post(
                 "/query",
                 json={"question": "Q?", "collection": "docs", "session_id": str(uuid.uuid4())},
-                headers=auth_headers,
             )
         assert resp.status_code == 503
-
-    async def test_query_persists_to_history(self, client: AsyncClient, auth_headers):
-        """After a query, GET /query/history/{session_id} should return 2 rows."""
-        sid = self._session_id()
-        mock_result = _make_rag_result(session_id=sid)
-        with patch(
-            "api.routes.query.run_rag_chain", new_callable=AsyncMock, return_value=mock_result
-        ):
-            await client.post(
-                "/query",
-                json={"question": "Persist test?", "collection": "docs", "session_id": sid},
-                headers=auth_headers,
-            )
-        hist_resp = await client.get(f"/query/history/{sid}", headers=auth_headers)
-        assert hist_resp.status_code == 200
-        history = hist_resp.json()
-        assert len(history) == 2
-        assert history[0]["role"] == "user"
-        assert history[0]["content"] == "Persist test?"
-        assert history[1]["role"] == "assistant"
-        assert history[1]["content"] == "Test answer"
-
-
-# ── API: GET /query/history ───────────────────────────────────────────────────
-
-
-@pytest.mark.asyncio
-class TestHistoryEndpoint:
-    async def test_empty_history_returns_empty_list(self, client: AsyncClient, auth_headers):
-        resp = await client.get(f"/query/history/{uuid.uuid4()}", headers=auth_headers)
-        assert resp.status_code == 200
-        assert resp.json() == []
-
-    async def test_history_requires_auth(self, client: AsyncClient):
-        resp = await client.get(f"/query/history/{uuid.uuid4()}")
-        assert resp.status_code == 401
-
-    async def test_history_is_session_scoped(self, client: AsyncClient, auth_headers):
-        """History for session A should not appear under session B."""
-        sid_a = str(uuid.uuid4())
-        sid_b = str(uuid.uuid4())
-        mock_result = _make_rag_result(session_id=sid_a)
-        with patch(
-            "api.routes.query.run_rag_chain", new_callable=AsyncMock, return_value=mock_result
-        ):
-            await client.post(
-                "/query",
-                json={"question": "Session A question", "collection": "docs", "session_id": sid_a},
-                headers=auth_headers,
-            )
-        resp_b = await client.get(f"/query/history/{sid_b}", headers=auth_headers)
-        assert resp_b.json() == []
-
-    async def test_history_citations_deserialised(self, client: AsyncClient, auth_headers):
-        """Citations stored as JSON should come back as structured objects."""
-        sid = str(uuid.uuid4())
-        mock_result = _make_rag_result(session_id=sid)
-        with patch(
-            "api.routes.query.run_rag_chain", new_callable=AsyncMock, return_value=mock_result
-        ):
-            await client.post(
-                "/query",
-                json={"question": "Cite test?", "collection": "docs", "session_id": sid},
-                headers=auth_headers,
-            )
-        history = (await client.get(f"/query/history/{sid}", headers=auth_headers)).json()
-        assistant_turn = next(h for h in history if h["role"] == "assistant")
-        assert assistant_turn["citations"] is not None
-        assert assistant_turn["citations"][0]["source"] == "doc.pdf"

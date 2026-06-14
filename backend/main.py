@@ -1,11 +1,6 @@
 """
 main.py — FastAPI application entry point.
 
-Startup order:
-  1. Config is validated (Pydantic Settings).
-  2. All routers are mounted.
-  3. CORS middleware is attached.
-
 Run locally:
   uvicorn main:app --reload --port 8000
 """
@@ -16,7 +11,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from api.middleware.cors import add_cors
-from api.routes import auth, eval, ingest, profile, query, settings, status
+from api.routes import eval, ingest, query, status
 from config import get_settings
 
 settings_obj = get_settings()
@@ -39,7 +34,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="GalvanR.A.G API",
     description=(
-        "Self-hostable RAG engine — upload docs, get cited answers, " "measure quality with RAGAS."
+        "Self-hostable RAG engine — upload docs, get cited answers, "
+        "measure quality with RAGAS."
     ),
     version="1.0.0",
     lifespan=lifespan,
@@ -51,13 +47,10 @@ app = FastAPI(
 add_cors(app)
 
 # ── Routers ───────────────────────────────────────────────────────────────────
-app.include_router(auth.router)
 app.include_router(ingest.router)
 app.include_router(query.router)
 app.include_router(eval.router)
 app.include_router(status.router)
-app.include_router(profile.router)
-app.include_router(settings.router)
 
 
 # ── Root health probe ─────────────────────────────────────────────────────────

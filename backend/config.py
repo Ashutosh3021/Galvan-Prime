@@ -5,7 +5,6 @@ Uses Pydantic Settings so every value is typed and validated at startup.
 
 from functools import lru_cache
 
-from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,14 +12,6 @@ class Settings(BaseSettings):
     # ── App ──────────────────────────────────────────────────
     environment: str = "development"
     log_level: str = "INFO"
-
-    # ── Database ─────────────────────────────────────────────
-    database_url: str
-
-    # ── Auth ─────────────────────────────────────────────────
-    secret_key: str
-    access_token_expire_minutes: int = 30
-    refresh_token_expire_days: int = 7
 
     # ── LLM ──────────────────────────────────────────────────
     gemini_api_key: str = ""
@@ -32,18 +23,14 @@ class Settings(BaseSettings):
     chroma_persist_dir: str = "./chroma_db"
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        # .env is optional — in production (Render, Docker) vars come from
+        # the host environment directly.
+        env_file=(".env", ".env.local"),
         env_file_encoding="utf-8",
+        env_ignore_empty=True,
         case_sensitive=False,
         extra="ignore",
     )
-
-    @field_validator("secret_key")
-    @classmethod
-    def secret_key_min_length(cls, v: str) -> str:
-        if len(v) < 16:
-            raise ValueError("SECRET_KEY must be at least 16 characters")
-        return v
 
 
 @lru_cache

@@ -14,7 +14,6 @@ FROM python:3.11-slim AS builder
 # System deps needed at build time only
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
-        libpq-dev \
         curl \
     && rm -rf /var/lib/apt/lists/*
 
@@ -36,7 +35,6 @@ FROM python:3.11-slim AS runtime
 
 # Runtime system deps only
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libpq5 \
         curl \
     && rm -rf /var/lib/apt/lists/*
 

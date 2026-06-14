@@ -2,8 +2,8 @@
 api/routes/ingest.py — Document ingestion endpoints.
 
 POST   /ingest                — upload a file (PDF/TXT) or provide a URL
-GET    /ingest/collections    — list collections with stats for the current user
-DELETE /ingest/{doc_id}       — delete a document and its vectors
+GET    /ingest/collections    — list collections stored in ChromaDB
+DELETE /ingest/{doc_id}       — delete a document's vectors from ChromaDB
 """
 
 from __future__ import annotations
@@ -21,15 +21,10 @@ from fastapi import (
     UploadFile,
     status,
 )
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 
-from api.deps import get_current_user, get_db
 from config import get_settings
 from core.ingestion.service import get_collections, ingest_document
 from core.retrieval.vectorstore import ChromaStore
-from db.models.document import Document
-from db.models.user import User
 from schemas.ingest import CollectionOut, IngestOut
 
 router = APIRouter(prefix="/ingest", tags=["ingest"])
@@ -58,15 +53,9 @@ async def ingest(
     chunk_strategy: Literal["fixed", "semantic"] = Form("fixed"),
     file: Optional[UploadFile] = File(None, description="PDF or TXT file to upload"),
     url: Optional[str] = Form(None, description="URL to scrape (alternative to file upload)"),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
 ) -> IngestOut:
     """
     Upload a PDF/TXT file **or** provide a URL.  Exactly one must be supplied.
-
-    The document is processed synchronously in this request.  For large files
-    (>10 MB) consider wrapping this in a background task — the architecture
-    supports it via BackgroundTasks.
     """
     if file is None and not url:
         raise HTTPException(
@@ -105,9 +94,7 @@ async def ingest(
 
     # ── Run ingestion ─────────────────────────────────────────────────────────
     try:
-        doc = await ingest_document(
-            db=db,
-            user_id=current_user.id,
+        result = await ingest_document(
             file_bytes=file_bytes,
             filename=filename,
             source_type=source_type,
@@ -118,15 +105,7 @@ async def ingest(
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
 
-    return IngestOut(
-        doc_id=doc.id,
-        filename=doc.filename,
-        collection=doc.collection,
-        chunk_count=doc.chunk_count,
-        chunk_strategy=doc.chunk_strategy,  # type: ignore[arg-type]
-        status=doc.status,  # type: ignore[arg-type]
-        ingested_at=doc.ingested_at,
-    )
+    return result
 
 
 # ── GET /ingest/collections ───────────────────────────────────────────────────
@@ -135,13 +114,10 @@ async def ingest(
 @router.get(
     "/collections",
     response_model=list[CollectionOut],
-    summary="List all collections for the current user",
+    summary="List all collections",
 )
-async def list_collections(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-) -> list[CollectionOut]:
-    rows = await get_collections(user_id=current_user.id, db=db)
+async def list_collections() -> list[CollectionOut]:
+    rows = get_collections(persist_dir=settings.chroma_persist_dir)
     return [CollectionOut(**row) for row in rows]
 
 
@@ -152,36 +128,20 @@ async def list_collections(
     "/{doc_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     response_model=None,
-    summary="Delete a document and its vectors",
+    summary="Delete a document's vectors from ChromaDB",
 )
 async def delete_document(
     doc_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    collection: str,
 ) -> None:
-    result = await db.execute(
-        select(Document).where(
-            Document.id == doc_id,
-            Document.user_id == current_user.id,
-        )
-    )
-    doc: Document | None = result.scalar_one_or_none()
-
-    if doc is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
-
-    # Remove vectors from ChromaDB
     try:
         store = ChromaStore(
-            collection_name=doc.collection,
+            collection_name=collection,
             persist_dir=settings.chroma_persist_dir,
         )
-        store.delete_by_doc_id(str(doc.id))
+        store.delete_by_doc_id(str(doc_id))
     except Exception as exc:
-        # Non-fatal: log and continue with DB deletion
-        import logging
-
-        logging.getLogger(__name__).warning("Vector deletion failed: %s", exc)
-
-    await db.delete(doc)
-    await db.flush()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Could not delete vectors: {exc}",
+        )
