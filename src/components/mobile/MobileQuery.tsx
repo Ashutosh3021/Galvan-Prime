@@ -81,7 +81,7 @@ export default function MobileQuery() {
               focus:outline-none focus:border-[#ff6600]
             "
           >
-            {(collections.length > 0 ? collections : ['my-docs']).map(c => (
+            {collections.map(c => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>

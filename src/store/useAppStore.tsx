@@ -16,7 +16,7 @@ interface AppState {
 
 type AppAction = { type: 'SET_ACTIVE_COLLECTION'; payload: string };
 
-const DEFAULT_STATE: AppState = { activeCollection: 'my-docs' };
+const DEFAULT_STATE: AppState = { activeCollection: '' };
 
 function reducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {

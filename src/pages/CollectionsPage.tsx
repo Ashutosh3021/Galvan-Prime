@@ -16,9 +16,6 @@ function buildCollections(docs: DocumentRecord[]) {
       if (doc.created_at > existing.latest) existing.latest = doc.created_at;
     }
   }
-  // Seed default collections even if empty
-  if (!map.has('my-docs')) map.set('my-docs', { name: 'my-docs', count: 0, latest: '' });
-  if (!map.has('research-papers')) map.set('research-papers', { name: 'research-papers', count: 0, latest: '' });
   return Array.from(map.values()).sort((a, b) => b.latest.localeCompare(a.latest));
 }
 
@@ -197,8 +194,12 @@ export default function CollectionsPage() {
         ) : (
           <div className="flex flex-col items-center justify-center py-24 text-on-surface-variant">
             <Icon name="folder_off" size={48} className="mb-4 opacity-30" />
-            <p className="text-[15px] font-semibold">No collections match your search.</p>
-            <p className="text-[13px] mt-1 opacity-70">Try a different filter or ingest some documents first.</p>
+            <p className="text-[15px] font-semibold">
+              {search ? 'No collections match your search.' : 'No collections yet.'}
+            </p>
+            <p className="text-[13px] mt-1 opacity-70">
+              {search ? 'Try a different filter or ingest some documents first.' : 'Ingest documents to create your first collection.'}
+            </p>
           </div>
         )
       )}

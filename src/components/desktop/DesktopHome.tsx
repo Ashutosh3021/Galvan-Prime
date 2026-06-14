@@ -1,13 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from '../ui/Icon';
+import { useEvalMetrics } from '../../hooks/useEval';
 import type { MetricCard } from '../../types';
-
-const metrics: MetricCard[] = [
-  { label: 'Faithfulness',     value: 0.82, delta: +0.04, status: 'good', icon: 'verified'    },
-  { label: 'Answer Relevancy', value: 0.79, delta: +0.02, status: 'good', icon: 'target'       },
-  { label: 'Context Recall',   value: 0.74, delta: -0.05, status: 'warn', icon: 'memory'       },
-];
 
 function MetricCardItem({ card }: { card: MetricCard }) {
   const isWarn = card.status === 'warn';
@@ -19,16 +14,21 @@ function MetricCardItem({ card }: { card: MetricCard }) {
         <Icon name={card.icon} size={18} filled className={isWarn ? 'text-primary-container' : 'text-secondary-container'} />
       </div>
       <div className="flex items-baseline gap-2 mt-2">
-        <span className="text-[32px] font-semibold leading-tight text-on-surface">{card.value}</span>
-        {card.delta !== undefined && (
+        <span className="text-[32px] font-semibold leading-tight text-on-surface">
+          {card.value > 0 ? card.value.toFixed(2) : '—'}
+        </span>
+        {card.delta !== undefined && card.value > 0 && (
           <span className={`text-[14px] ${isWarn ? 'text-primary-container' : 'text-secondary-container'}`}>
             {card.delta > 0 ? '+' : ''}{card.delta.toFixed(2)}
           </span>
         )}
       </div>
-      {isWarn && (
+      {card.value > 0 && (
         <div className="mt-2 w-full bg-surface-container-lowest h-1.5 rounded-full overflow-hidden">
-          <div className="bg-primary-container h-full" style={{ width: `${card.value * 100}%` }} />
+          <div
+            className={`${isWarn ? 'bg-primary-container' : 'bg-secondary-container'} h-full`}
+            style={{ width: `${card.value * 100}%` }}
+          />
         </div>
       )}
     </div>
@@ -38,12 +38,35 @@ function MetricCardItem({ card }: { card: MetricCard }) {
 export default function DesktopHome() {
   const [copied, setCopied] = useState(false);
   const command = 'git clone https://github.com/galvan/rag.git && docker-compose up -d';
+  const { data: metrics } = useEvalMetrics();
 
   function handleCopy() {
     void navigator.clipboard.writeText(command);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
+
+  // Build metric cards from real eval data; show placeholder values when no runs exist
+  const metricCards: MetricCard[] = [
+    {
+      label: 'Faithfulness',
+      value: metrics?.faithfulness ?? 0,
+      status: (metrics?.faithfulness ?? 0) >= 0.80 ? 'good' : 'warn',
+      icon: 'verified',
+    },
+    {
+      label: 'Answer Relevancy',
+      value: metrics?.answer_relevancy ?? 0,
+      status: (metrics?.answer_relevancy ?? 0) >= 0.75 ? 'good' : 'warn',
+      icon: 'target',
+    },
+    {
+      label: 'Context Recall',
+      value: metrics?.context_recall ?? 0,
+      status: (metrics?.context_recall ?? 0) >= 0.70 ? 'good' : 'warn',
+      icon: 'memory',
+    },
+  ];
 
   return (
     <main id="main-content" className="flex-grow flex flex-col items-center justify-center px-gutter py-24 w-full max-w-[1440px] mx-auto relative">
@@ -79,7 +102,7 @@ export default function DesktopHome() {
       </section>
 
       <section className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
-        {metrics.map(m => <MetricCardItem key={m.label} card={m} />)}
+        {metricCards.map(m => <MetricCardItem key={m.label} card={m} />)}
       </section>
 
       <section className="flex justify-center">

@@ -56,12 +56,13 @@ export function useIngestUrl() {
   });
 }
 
-/** Delete a document — optimistic update */
+/** Delete a document — optimistic update. Requires docId AND collection. */
 export function useDeleteDocument() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (docId: string) => deleteDocument(docId),
-    onMutate: async (docId: string) => {
+    mutationFn: ({ docId, collection }: { docId: string; collection: string }) =>
+      deleteDocument(docId, collection),
+    onMutate: async ({ docId }) => {
       await qc.cancelQueries({ queryKey: [DOCUMENTS_KEY] });
       const snapshot = qc.getQueriesData<DocumentRecord[]>({ queryKey: [DOCUMENTS_KEY] });
       qc.setQueriesData<DocumentRecord[]>({ queryKey: [DOCUMENTS_KEY] }, old =>
@@ -69,7 +70,7 @@ export function useDeleteDocument() {
       );
       return { snapshot };
     },
-    onError: (_err, _docId, ctx) => {
+    onError: (_err, _vars, ctx) => {
       if (ctx?.snapshot) {
         for (const [key, data] of ctx.snapshot) {
           qc.setQueryData(key, data);
@@ -82,11 +83,11 @@ export function useDeleteDocument() {
   });
 }
 
-/** Derive unique collections from the documents list */
+/**
+ * Derive unique collections from the documents list.
+ * No hardcoded defaults — only real collections from the backend are shown.
+ */
 export function useCollections() {
   const { data: docs = [] } = useDocuments();
-  const collections = Array.from(new Set(docs.map(d => d.collection)));
-  if (!collections.includes('my-docs')) collections.unshift('my-docs');
-  if (!collections.includes('research-papers')) collections.splice(1, 0, 'research-papers');
-  return collections;
+  return Array.from(new Set(docs.map(d => d.collection)));
 }

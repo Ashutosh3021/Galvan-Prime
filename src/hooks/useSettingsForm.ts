@@ -5,7 +5,7 @@ const STORAGE_KEY = 'galvanrag:settings';
 
 const DEFAULT_SETTINGS: SettingsFormState = {
   llmProvider: 'gemini',
-  apiKey: '************************',
+  apiKey: '',
   vectorDB: 'pinecone',
   envRegion: 'us-east-1-aws',
   indexName: 'galvan-docs-prod',

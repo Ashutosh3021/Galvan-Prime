@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from '../ui/Icon';
+import { useEvalMetrics } from '../../hooks/useEval';
 
 export function MobileTopAppBar({ title }: { title: string }) {
   return (
@@ -25,12 +26,20 @@ function MobileMetric({ label, value, status, icon }: { label: string; value: nu
         <Icon name={icon} size={18} className="text-[#e3bfb1]" />
       </div>
       <div className="flex items-end gap-2">
-        <span className={`text-[32px] font-bold ${isGood ? 'text-[#10B981]' : 'text-[#F59E0B]'}`}>{value}</span>
-        <span className={`text-[12px] font-bold mb-1 ${isGood ? 'text-[#10B981]' : 'text-[#F59E0B]'}`}>{isGood ? 'GOOD' : 'WARN'}</span>
+        <span className={`text-[32px] font-bold ${isGood ? 'text-[#10B981]' : 'text-[#F59E0B]'}`}>
+          {value > 0 ? value.toFixed(2) : '—'}
+        </span>
+        {value > 0 && (
+          <span className={`text-[12px] font-bold mb-1 ${isGood ? 'text-[#10B981]' : 'text-[#F59E0B]'}`}>
+            {isGood ? 'GOOD' : 'WARN'}
+          </span>
+        )}
       </div>
-      <div className="w-full bg-[#000d27] h-1 rounded-full overflow-hidden">
-        <div className={`h-full ${isGood ? 'bg-[#10B981]' : 'bg-[#F59E0B]'}`} style={{ width: `${value * 100}%` }} />
-      </div>
+      {value > 0 && (
+        <div className="w-full bg-[#000d27] h-1 rounded-full overflow-hidden">
+          <div className={`h-full ${isGood ? 'bg-[#10B981]' : 'bg-[#F59E0B]'}`} style={{ width: `${value * 100}%` }} />
+        </div>
+      )}
     </div>
   );
 }
@@ -38,12 +47,17 @@ function MobileMetric({ label, value, status, icon }: { label: string; value: nu
 export default function MobileHome() {
   const [copied, setCopied] = useState(false);
   const command = 'git clone https://github.com/galvan/rag.git && docker-compose up';
+  const { data: metrics } = useEvalMetrics();
 
   function handleCopy() {
     void navigator.clipboard.writeText(command);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
+
+  const faithfulness = metrics?.faithfulness ?? 0;
+  const answerRelevancy = metrics?.answer_relevancy ?? 0;
+  const contextRecall = metrics?.context_recall ?? 0;
 
   return (
     <div className="text-[#d7e2ff] font-sans flex flex-col" style={{ backgroundColor: '#0A0F1C' }}>
@@ -66,9 +80,9 @@ export default function MobileHome() {
           </section>
 
           <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <MobileMetric label="Faithfulness"     value={0.82} status="good" icon="verified" />
-            <MobileMetric label="Answer Relevancy" value={0.79} status="warn" icon="target"   />
-            <MobileMetric label="Context Recall"   value={0.74} status="warn" icon="memory"   />
+            <MobileMetric label="Faithfulness"     value={faithfulness}   status={faithfulness >= 0.80 ? 'good' : 'warn'}   icon="verified" />
+            <MobileMetric label="Answer Relevancy" value={answerRelevancy} status={answerRelevancy >= 0.75 ? 'good' : 'warn'} icon="target"   />
+            <MobileMetric label="Context Recall"   value={contextRecall}  status={contextRecall >= 0.70 ? 'good' : 'warn'}  icon="memory"   />
           </section>
 
           <section className="flex justify-center md:justify-start pt-6">

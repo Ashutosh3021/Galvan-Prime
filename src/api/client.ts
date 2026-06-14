@@ -9,7 +9,6 @@
  */
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
-export const IS_MOCK = import.meta.env.VITE_MOCK === 'true';
 
 export class ApiError extends Error {
   constructor(
@@ -81,5 +80,7 @@ export async function apiDelete<T>(path: string): Promise<T> {
     const text = await res.text().catch(() => res.statusText);
     throw new ApiError(res.status, text);
   }
+  // 204 No Content — return void cast to T
+  if (res.status === 204) return undefined as unknown as T;
   return res.json() as Promise<T>;
 }

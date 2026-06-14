@@ -1,15 +1,17 @@
 import { useSettingsForm } from '../../hooks/useSettingsForm';
 import { Icon } from '../ui/Icon';
-import type { EnvVar } from '../../types';
-
-const envVars: EnvVar[] = [
-  { key: 'GEMINI_API_KEY',   loaded: true },
-  { key: 'PINECONE_API_KEY', loaded: true },
-  { key: 'DATABASE_URL',     loaded: true },
-];
+import { useStatus } from '../../hooks/useStatus';
 
 export default function MobileSettings() {
   const { form, showKey, saved, setField, toggleShowKey, handleSave, handleReset } = useSettingsForm();
+  const { data: statusData } = useStatus();
+
+  const services = statusData?.services ?? [];
+  const serviceItems = [
+    { key: 'LLM',      loaded: services.find(s => s.name === 'llm')?.status === 'healthy' },
+    { key: 'ChromaDB', loaded: services.find(s => s.name === 'chromadb')?.status === 'healthy' },
+    { key: 'Pinecone', loaded: services.find(s => s.name === 'pinecone')?.status === 'healthy' },
+  ];
 
   return (
     <main className="flex-1 flex flex-col w-full max-w-[1440px] mx-auto px-4 md:px-8 py-8">
@@ -111,10 +113,15 @@ export default function MobileSettings() {
             Connection Status
           </h2>
           <ul className="space-y-2">
-            {envVars.map(ev => (
+            {serviceItems.map(ev => (
               <li key={ev.key} className="flex items-center justify-between p-2 rounded bg-surface-container-lowest border border-surface-container-high">
                 <span className="font-mono text-[13px] text-on-surface-variant">{ev.key}</span>
-                <Icon name="check_circle" size={18} filled className="text-[#4ae176]" />
+                <Icon
+                  name={ev.loaded ? 'check_circle' : 'error'}
+                  size={18}
+                  filled
+                  className={ev.loaded ? 'text-[#4ae176]' : 'text-[#ef4444]'}
+                />
               </li>
             ))}
           </ul>

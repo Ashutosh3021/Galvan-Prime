@@ -1,16 +1,27 @@
 import { Icon } from '../ui/Icon';
 import { useSettingsForm } from '../../hooks/useSettingsForm';
-import type { EnvVar } from '../../types';
-
-const envVars: EnvVar[] = [
-  { key: 'GEMINI_API_KEY',   loaded: true  },
-  { key: 'PINECONE_API_KEY', loaded: true  },
-  { key: 'DATABASE_URL',     loaded: true  },
-  { key: 'LANGSMITH_KEY',    loaded: false },
-];
+import { useStatus } from '../../hooks/useStatus';
 
 export default function DesktopSettings() {
   const { form, showKey, saved, setField, toggleShowKey, handleSave, handleReset } = useSettingsForm();
+  const { data: statusData } = useStatus();
+
+  // Derive real env/service status from the /status endpoint
+  const services = statusData?.services ?? [];
+  const serviceItems = [
+    {
+      key: 'LLM',
+      loaded: services.find(s => s.name === 'llm')?.status === 'healthy',
+    },
+    {
+      key: 'ChromaDB',
+      loaded: services.find(s => s.name === 'chromadb')?.status === 'healthy',
+    },
+    {
+      key: 'Pinecone',
+      loaded: services.find(s => s.name === 'pinecone')?.status === 'healthy',
+    },
+  ];
 
   return (
     <main id="main-content" className="max-w-[1440px] mx-auto px-gutter py-8 md:py-12">
@@ -144,14 +155,14 @@ export default function DesktopSettings() {
                 Environment Status
               </h3>
               <ul className="flex flex-col gap-4">
-                {envVars.map(ev => (
+                {serviceItems.map(ev => (
                   <li key={ev.key} className={`flex items-center justify-between p-3 rounded bg-[#05070A] border ${ev.loaded ? 'border-surface-container-highest' : 'border-[#ef4444]/30 border-dashed'}`}>
                     <div className="flex items-center gap-3">
                       <Icon name={ev.loaded ? 'check_circle' : 'error'} size={18} filled className={ev.loaded ? 'text-secondary-container' : 'text-[#ef4444]'} />
                       <span className="font-mono text-[14px] text-on-surface">{ev.key}</span>
                     </div>
                     <span className={`text-[12px] font-semibold tracking-[0.05em] ${ev.loaded ? 'text-secondary-container bg-secondary-container/10' : 'text-[#ef4444] bg-[#ef4444]/10'} px-2 py-1 rounded`}>
-                      {ev.loaded ? 'Loaded' : 'Missing'}
+                      {ev.loaded ? 'Healthy' : 'Unavailable'}
                     </span>
                   </li>
                 ))}

@@ -189,7 +189,7 @@ export default function DesktopQuery() {
           isLoading={isLoading}
           collection={collection}
           onCollectionChange={setCollection}
-          collections={collections.length > 0 ? collections : ['my-docs']}
+          collections={collections}
           sessionId={sessionId}
         />
       </main>
