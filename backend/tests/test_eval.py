@@ -24,7 +24,10 @@ import pytest
 from httpx import AsyncClient
 
 _SAMPLE_TEST_SET = [
-    {"question": "What is RAG?", "ground_truth": "RAG stands for Retrieval-Augmented Generation."},
+    {
+        "question": "What is RAG?",
+        "ground_truth": "RAG stands for Retrieval-Augmented Generation.",
+    },
     {
         "question": "What is a vector store?",
         "ground_truth": "A vector store holds embeddings for similarity search.",
@@ -71,7 +74,12 @@ class TestMetricResult:
     def test_all_four_metrics_have_targets(self):
         from core.evaluation.metrics import METRIC_TARGETS
 
-        for metric in ("faithfulness", "answer_relevancy", "context_recall", "context_precision"):
+        for metric in (
+            "faithfulness",
+            "answer_relevancy",
+            "context_recall",
+            "context_precision",
+        ):
             assert metric in METRIC_TARGETS
             assert 0.0 < METRIC_TARGETS[metric] <= 1.0
 

@@ -71,7 +71,10 @@ async def run_evaluation(
 
     run_label = run_id or str(uuid.uuid4())[:8]
     logger.info(
-        "RAGAS eval run=%s  collection='%s'  items=%d", run_label, collection, len(test_set)
+        "RAGAS eval run=%s  collection='%s'  items=%d",
+        run_label,
+        collection,
+        len(test_set),
     )
 
     # ── Step 1: run RAG pipeline for each test question ───────────────────────
@@ -153,7 +156,9 @@ async def run_evaluation(
         return {m.name: result[m.name] for m in METRICS}  # type: ignore[attr-defined]
 
     try:
-        scores: dict[str, float] = await loop.run_in_executor(_eval_executor, _run_ragas)
+        scores: dict[str, float] = await loop.run_in_executor(
+            _eval_executor, _run_ragas
+        )
     except Exception as exc:
         logger.error("RAGAS evaluate() failed: %s", exc)
         return {m.name: None for m in METRICS}  # type: ignore[attr-defined]

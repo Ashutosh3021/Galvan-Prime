@@ -17,7 +17,9 @@ class RegisterIn(BaseModel):
     @classmethod
     def username_alphanumeric(cls, v: str) -> str:
         if not v.replace("_", "").replace("-", "").isalnum():
-            raise ValueError("Username may only contain letters, numbers, hyphens, and underscores")
+            raise ValueError(
+                "Username may only contain letters, numbers, hyphens, and underscores"
+            )
         return v
 
 

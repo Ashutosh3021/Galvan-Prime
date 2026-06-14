@@ -129,7 +129,11 @@ class ChromaStore:
         ids_to_delete = results.get("ids", [])
         if ids_to_delete:
             self._col.delete(ids=ids_to_delete)
-            logger.info("ChromaStore: deleted %d chunks for doc_id=%s", len(ids_to_delete), doc_id)
+            logger.info(
+                "ChromaStore: deleted %d chunks for doc_id=%s",
+                len(ids_to_delete),
+                doc_id,
+            )
 
     def count(self) -> int:
         """Return total number of vectors in this collection."""
@@ -149,7 +153,9 @@ class PineconeStore:
         try:
             from pinecone import Pinecone, ServerlessSpec  # type: ignore
         except ImportError as exc:
-            raise ImportError("Install the 'pinecone-client' package to use PineconeStore") from exc
+            raise ImportError(
+                "Install the 'pinecone-client' package to use PineconeStore"
+            ) from exc
 
         from config import get_settings
 
@@ -163,7 +169,9 @@ class PineconeStore:
                 name=index_name,
                 dimension=dimension,
                 metric="cosine",
-                spec=ServerlessSpec(cloud="aws", region=s.pinecone_environment or "us-east-1"),
+                spec=ServerlessSpec(
+                    cloud="aws", region=s.pinecone_environment or "us-east-1"
+                ),
             )
             logger.info("PineconeStore: created index '%s'", index_name)
 

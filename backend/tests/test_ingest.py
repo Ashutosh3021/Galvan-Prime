@@ -139,12 +139,16 @@ class TestIngestEndpoint:
     async def test_ingest_txt_file(self, client: AsyncClient):
         mock_out = _make_ingest_out()
         with patch(
-            "api.routes.ingest.ingest_document", new_callable=AsyncMock, return_value=mock_out
+            "api.routes.ingest.ingest_document",
+            new_callable=AsyncMock,
+            return_value=mock_out,
         ):
             resp = await client.post(
                 "/ingest",
                 data={"collection": "test-col", "chunk_strategy": "fixed"},
-                files={"file": ("test.txt", b"Hello world test content.", "text/plain")},
+                files={
+                    "file": ("test.txt", b"Hello world test content.", "text/plain")
+                },
             )
         assert resp.status_code == 201
         body = resp.json()
@@ -185,7 +189,9 @@ class TestIngestEndpoint:
         mock_out = _make_ingest_out()
         mock_out = mock_out.model_copy(update={"filename": "https://example.com"})
         with patch(
-            "api.routes.ingest.ingest_document", new_callable=AsyncMock, return_value=mock_out
+            "api.routes.ingest.ingest_document",
+            new_callable=AsyncMock,
+            return_value=mock_out,
         ):
             resp = await client.post(
                 "/ingest",
