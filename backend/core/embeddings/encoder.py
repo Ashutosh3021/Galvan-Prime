@@ -7,9 +7,14 @@ to avoid the ~2s cold-start penalty per call.
 
 Memory notes
 ────────────
-* ``device="cpu"`` is set explicitly so ONNX Runtime never scans for GPU
-  devices (eliminates the DRM /sys warning and its transient memory spike).
-* ``CUDA_VISIBLE_DEVICES=""`` is set before the import for the same reason.
+* ``CUDA_VISIBLE_DEVICES=""`` is exported in ``scripts/start.sh`` *before*
+  the Python process starts.  ONNX Runtime's native device-discovery runs
+  during shared-library load — setting the var inside Python is too late.
+  The shell-level export is what actually suppresses the DRM scan and its
+  transient memory spike.
+* ``device="cpu"`` on SentenceTransformer is a belt-and-braces guard that
+  also prevents ONNX from choosing a GPU execution provider at model-load
+  time even if CUDA somehow becomes visible.
 * ``encode()`` processes texts in micro-batches and deletes each NumPy
   ndarray immediately after converting to Python lists, so peak RAM is
   proportional to ``batch_size`` rather than the full corpus size.
@@ -23,7 +28,6 @@ Usage:
 from __future__ import annotations
 
 import logging
-import os
 from functools import lru_cache
 from typing import Sequence
 
@@ -32,10 +36,6 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 MODEL_NAME = "all-MiniLM-L6-v2"
-
-# Prevent ONNX Runtime from scanning CUDA / DRM devices in CPU-only containers.
-# Must be set before sentence_transformers is imported.
-os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
 
 
 class Encoder:
