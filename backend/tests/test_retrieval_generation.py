@@ -30,9 +30,7 @@ from httpx import AsyncClient
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 
-def _make_search_result(
-    text="chunk text", source="doc.pdf", page=1, score=0.9, doc_id=None
-):
+def _make_search_result(text="chunk text", source="doc.pdf", page=1, score=0.9, doc_id=None):
     from core.retrieval.vectorstore import SearchResult
 
     return SearchResult(
@@ -49,8 +47,7 @@ def _make_rag_result(answer="Test answer", session_id=None, citations=None):
 
     return RAGResult(
         answer=answer,
-        citations=citations
-        or [Citation(source="doc.pdf", page=1, chunk="relevant excerpt")],
+        citations=citations or [Citation(source="doc.pdf", page=1, chunk="relevant excerpt")],
         session_id=session_id or str(uuid.uuid4()),
         latency_ms=250,
     )
@@ -69,9 +66,7 @@ class TestBM25Search:
             "retrieval augmented generation uses documents",
         ]
         meta = [{} for _ in corpus]
-        results = _bm25_search(
-            corpus, meta, "retrieval generation documents", n_results=2
-        )
+        results = _bm25_search(corpus, meta, "retrieval generation documents", n_results=2)
         assert len(results) == 2
         top_idx = results[0][0]
         assert top_idx == 2
@@ -111,13 +106,10 @@ class TestRRFFusion:
 
         corpus_texts, corpus_meta = self._make_corpus()
         vector_results = [
-            _make_search_result(t, score=0.9 - i * 0.1)
-            for i, t in enumerate(corpus_texts)
+            _make_search_result(t, score=0.9 - i * 0.1) for i, t in enumerate(corpus_texts)
         ]
         bm25_ranked = [(0, 5.0), (2, 3.0), (1, 1.0)]
-        fused = _rrf_fuse(
-            vector_results, bm25_ranked, corpus_texts, corpus_meta, top_k=2
-        )
+        fused = _rrf_fuse(vector_results, bm25_ranked, corpus_texts, corpus_meta, top_k=2)
         assert len(fused) <= 2
 
     def test_fused_scores_are_positive(self):
@@ -126,9 +118,7 @@ class TestRRFFusion:
         corpus_texts, corpus_meta = self._make_corpus()
         vector_results = [_make_search_result(t) for t in corpus_texts]
         bm25_ranked = [(0, 4.0), (1, 2.0), (2, 1.0)]
-        fused = _rrf_fuse(
-            vector_results, bm25_ranked, corpus_texts, corpus_meta, top_k=3
-        )
+        fused = _rrf_fuse(vector_results, bm25_ranked, corpus_texts, corpus_meta, top_k=3)
         for r in fused:
             assert r.score > 0.0
 
@@ -143,9 +133,7 @@ class TestRRFFusion:
         ]
         vector_results = [_make_search_result(text, score=0.95)]
         bm25_ranked = [(0, 8.0)]
-        fused = _rrf_fuse(
-            vector_results, bm25_ranked, corpus_texts, corpus_meta, top_k=5
-        )
+        fused = _rrf_fuse(vector_results, bm25_ranked, corpus_texts, corpus_meta, top_k=5)
         texts_in_result = [r.chunk_text for r in fused]
         assert texts_in_result.count(text) == 1
 

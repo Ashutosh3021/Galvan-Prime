@@ -156,9 +156,7 @@ async def run_evaluation(
         return {m.name: result[m.name] for m in METRICS}  # type: ignore[attr-defined]
 
     try:
-        scores: dict[str, float] = await loop.run_in_executor(
-            _eval_executor, _run_ragas
-        )
+        scores: dict[str, float] = await loop.run_in_executor(_eval_executor, _run_ragas)
     except Exception as exc:
         logger.error("RAGAS evaluate() failed: %s", exc)
         return {m.name: None for m in METRICS}  # type: ignore[attr-defined]

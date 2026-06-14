@@ -33,9 +33,7 @@ class Chunk:
 # ── Fixed-size chunker ────────────────────────────────────────────────────────
 
 
-def fixed_chunk(
-    pages: list[RawPage], chunk_size: int = 512, overlap: int = 64
-) -> list[Chunk]:
+def fixed_chunk(pages: list[RawPage], chunk_size: int = 512, overlap: int = 64) -> list[Chunk]:
     """
     Split pages into fixed-size chunks using LangChain's
     RecursiveCharacterTextSplitter (character-based, approximating tokens).
@@ -123,9 +121,7 @@ def semantic_chunk(
             if current_len + s_len > target_size and current:
                 chunk_text = " ".join(current).strip()
                 if chunk_text:
-                    chunks.append(
-                        Chunk(text=chunk_text, source=page.source, page=page.page)
-                    )
+                    chunks.append(Chunk(text=chunk_text, source=page.source, page=page.page))
 
                 # Keep the last N sentences as overlap context
                 current = current[-overlap_sentences:] if overlap_sentences else []
@@ -138,9 +134,7 @@ def semantic_chunk(
         if current:
             chunk_text = " ".join(current).strip()
             if chunk_text:
-                chunks.append(
-                    Chunk(text=chunk_text, source=page.source, page=page.page)
-                )
+                chunks.append(Chunk(text=chunk_text, source=page.source, page=page.page))
 
     logger.info(
         "semantic_chunk: %d page(s) → %d chunks (target=%d)",

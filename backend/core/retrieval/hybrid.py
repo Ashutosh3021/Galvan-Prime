@@ -177,9 +177,7 @@ async def hybrid_search(
             return vector_results, [], [], []
 
         # ── BM25 retrieval ────────────────────────────────────────────────────
-        bm25_ranked = _bm25_search(
-            corpus_texts, corpus_meta, query, n_results=effective_fetch
-        )
+        bm25_ranked = _bm25_search(corpus_texts, corpus_meta, query, n_results=effective_fetch)
 
         return vector_results, bm25_ranked, corpus_texts, corpus_meta
 

@@ -37,13 +37,9 @@ async def query(body: QueryIn) -> QueryOut:
             session_id=body.session_id,
         )
     except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
-        )
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
     except RuntimeError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)
-        )
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc))
     except Exception as exc:
         logger.exception("RAG chain error: %s", exc)
         raise HTTPException(
@@ -53,10 +49,7 @@ async def query(body: QueryIn) -> QueryOut:
 
     return QueryOut(
         answer=result.answer,
-        citations=[
-            Citation(source=c.source, page=c.page, chunk=c.chunk)
-            for c in result.citations
-        ],
+        citations=[Citation(source=c.source, page=c.page, chunk=c.chunk) for c in result.citations],
         session_id=result.session_id,
         latency_ms=result.latency_ms,
     )

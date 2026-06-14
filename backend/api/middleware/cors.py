@@ -20,9 +20,7 @@ _PROD_ORIGINS = [
     "https://galvanrag.vercel.app",
 ]
 
-ALLOWED_ORIGINS = (
-    _DEV_ORIGINS if settings.environment == "development" else _PROD_ORIGINS
-)
+ALLOWED_ORIGINS = _DEV_ORIGINS if settings.environment == "development" else _PROD_ORIGINS
 
 
 def add_cors(app) -> None:
