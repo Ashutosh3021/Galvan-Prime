@@ -6,6 +6,15 @@ In development, only ChromaDB is used.  Pinecone is activated when
 PINECONE_API_KEY is set in the environment.
 
 Collections map 1-to-1 with user-defined document collections.
+
+Memory note — ChromaStore caching
+──────────────────────────────────
+``get_chroma_store()`` returns a cached ``ChromaStore`` per
+(collection_name, persist_dir) pair so the underlying
+``chromadb.PersistentClient`` and its HNSW index segments are opened
+exactly once per process.  Without this, each ingestion call was
+reopening the client, re-reading the SQLite WAL and reloading HNSW
+segments — a significant transient memory spike on every request.
 """
 
 from __future__ import annotations
@@ -13,6 +22,7 @@ from __future__ import annotations
 import logging
 import uuid
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -138,6 +148,25 @@ class ChromaStore:
     def count(self) -> int:
         """Return total number of vectors in this collection."""
         return self._col.count()
+
+
+# ── ChromaStore process-wide cache ────────────────────────────────────────────
+
+
+@lru_cache(maxsize=32)
+def get_chroma_store(collection_name: str, persist_dir: str) -> "ChromaStore":
+    """
+    Return a cached ChromaStore for the given (collection, persist_dir) pair.
+
+    The underlying ``chromadb.PersistentClient`` is opened once per process
+    rather than on every ingestion/query call.  This avoids repeated SQLite
+    WAL reads and HNSW index segment loads, which were the main source of
+    the per-request memory spike.
+
+    Thread-safety: lru_cache is GIL-protected for CPython; safe for the
+    single-worker Uvicorn configuration used in production.
+    """
+    return ChromaStore(collection_name=collection_name, persist_dir=persist_dir)
 
 
 # ── Pinecone backend (optional) ───────────────────────────────────────────────

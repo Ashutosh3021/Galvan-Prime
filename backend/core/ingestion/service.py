@@ -7,6 +7,16 @@ It runs the full pipeline:
 
 No database is used — document metadata lives only in ChromaDB vector
 metadata and in the caller's response payload.
+
+Memory notes
+────────────
+* ``ChromaStore`` is retrieved via ``get_chroma_store()`` (lru_cache) so
+  the PersistentClient and HNSW index are opened once per process.
+* Embeddings are computed in micro-batches (see encoder.py) so peak RAM
+  is bounded regardless of corpus size.
+* RSS is logged at key ingestion boundaries so memory growth is visible
+  in production logs without adding a hard dependency on psutil (the
+  import is guarded and the logging degrades gracefully if unavailable).
 """
 
 from __future__ import annotations
@@ -14,6 +24,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import logging
+import os
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
@@ -23,7 +34,7 @@ from config import get_settings
 from core.embeddings.encoder import get_encoder
 from core.ingestion.chunkers import Chunk, fixed_chunk, semantic_chunk
 from core.ingestion.loaders import RawPage, load_pdf, load_text, load_url
-from core.retrieval.vectorstore import ChromaStore
+from core.retrieval.vectorstore import get_chroma_store
 from schemas.ingest import IngestOut
 
 logger = logging.getLogger(__name__)
@@ -33,6 +44,21 @@ _executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="embed")
 
 ChunkStrategy = Literal["fixed", "semantic"]
 SourceType = Literal["pdf", "url", "txt"]
+
+# Hard cap applied before any processing starts (defence-in-depth; the API
+# route enforces the same limit at the HTTP layer).
+_MAX_FILE_BYTES = 20 * 1024 * 1024  # 20 MB
+
+
+def _rss_mb() -> str:
+    """Return current process RSS in MB as a string, or '?' if psutil is absent."""
+    try:
+        import psutil  # optional; not in base requirements
+
+        rss = psutil.Process(os.getpid()).memory_info().rss / 1024 / 1024
+        return f"{rss:.1f} MB"
+    except Exception:  # noqa: BLE001
+        return "?"
 
 
 async def ingest_document(
@@ -70,6 +96,16 @@ async def ingest_document(
     doc_id = str(uuid.uuid4())
     ingested_at = datetime.datetime.now(datetime.timezone.utc)
 
+    # Guard against oversized payloads reaching the pipeline (belt-and-braces;
+    # the HTTP layer should reject them first via _MAX_UPLOAD_BYTES in the route).
+    if file_bytes and len(file_bytes) > _MAX_FILE_BYTES:
+        raise ValueError(
+            f"File size {len(file_bytes) / 1024 / 1024:.1f} MB exceeds the "
+            f"{_MAX_FILE_BYTES // 1024 // 1024} MB pipeline limit"
+        )
+
+    logger.info("Ingestion start: file='%s' RSS=%s", filename, _rss_mb())
+
     # ── 1. Load ───────────────────────────────────────────────────────────────
     pages: list[RawPage]
     if source_type == "pdf":
@@ -96,15 +132,18 @@ async def ingest_document(
     chunk_texts = [c.text for c in chunks]
 
     # ── 3. Embed (thread pool) ────────────────────────────────────────────────
+    logger.info("Pre-embed RSS=%s chunks=%d", _rss_mb(), len(chunks))
     encoder = get_encoder()
     loop = asyncio.get_event_loop()
     embeddings: list[list[float]] = await loop.run_in_executor(
         _executor,
         partial(encoder.encode, chunk_texts),
     )
+    logger.info("Post-embed RSS=%s", _rss_mb())
 
     # ── 4. Store in ChromaDB ──────────────────────────────────────────────────
-    store = ChromaStore(
+    # get_chroma_store() returns a cached instance — no repeated client init.
+    store = get_chroma_store(
         collection_name=collection,
         persist_dir=settings.chroma_persist_dir,
     )
@@ -133,10 +172,11 @@ async def ingest_document(
             logger.warning("Pinecone ingestion failed (non-fatal): %s", exc)
 
     logger.info(
-        "Ingestion complete: doc_id=%s collection='%s' chunks=%d",
+        "Ingestion complete: doc_id=%s collection='%s' chunks=%d RSS=%s",
         doc_id,
         collection,
         len(chunks),
+        _rss_mb(),
     )
 
     return IngestOut(
@@ -160,6 +200,8 @@ def get_collections(persist_dir: str) -> list[dict]:
     import chromadb
     from chromadb.config import Settings as CS
 
+    # Use a fresh read-only client here (listing collections is an admin
+    # operation, not a per-request hot path, so caching is not needed).
     client = chromadb.PersistentClient(
         path=persist_dir,
         settings=CS(anonymized_telemetry=False),
