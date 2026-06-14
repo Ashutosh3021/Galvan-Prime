@@ -14,7 +14,6 @@ from typing import Literal, Optional
 from fastapi import (
     APIRouter,
     BackgroundTasks,
-    Depends,
     File,
     Form,
     HTTPException,

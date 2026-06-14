@@ -24,7 +24,7 @@ from core.embeddings.encoder import get_encoder
 from core.ingestion.chunkers import Chunk, fixed_chunk, semantic_chunk
 from core.ingestion.loaders import RawPage, load_pdf, load_text, load_url
 from core.retrieval.vectorstore import ChromaStore
-from schemas.ingest import CollectionOut, IngestOut
+from schemas.ingest import IngestOut
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
