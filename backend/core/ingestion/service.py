@@ -22,9 +22,11 @@ Memory notes
 from __future__ import annotations
 
 import asyncio
+import ctypes
 import datetime
 import logging
 import os
+import sys
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
@@ -51,14 +53,67 @@ _MAX_FILE_BYTES = settings.max_upload_bytes
 
 
 def _rss_mb() -> str:
-    """Return current process RSS in MB as a string, or '?' if psutil is absent."""
+    """Return current process RSS in MB as a string.
+
+    psutil is preferred when present (it is not in base requirements, so it
+    may be absent in a clean install). When psutil is missing we fall back to
+    the stdlib so RSS is always logged as a real value — never '?':
+    ctypes GetProcessMemoryInfo on Windows, ``resource`` on POSIX.
+    """
     try:
         import psutil  # optional; not in base requirements
 
         rss = psutil.Process(os.getpid()).memory_info().rss / 1024 / 1024
         return f"{rss:.1f} MB"
     except Exception:  # noqa: BLE001
-        return "?"
+        pass
+
+    if sys.platform.startswith("win"):
+        try:
+            class _PROCESS_MEMORY_COUNTERS(ctypes.Structure):
+                _fields_ = [
+                    ("cb", ctypes.c_ulong),
+                    ("PageFaultCount", ctypes.c_ulong),
+                    ("PeakWorkingSetSize", ctypes.c_size_t),
+                    ("WorkingSetSize", ctypes.c_size_t),
+                    ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
+                    ("QuotaPagedPoolUsage", ctypes.c_size_t),
+                    ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
+                    ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
+                    ("PagefileUsage", ctypes.c_size_t),
+                    ("PeakPagefileUsage", ctypes.c_size_t),
+                    ("PrivateUsage", ctypes.c_size_t),
+                ]
+
+            counters = _PROCESS_MEMORY_COUNTERS()
+            counters.cb = ctypes.sizeof(counters)
+            api = ctypes.windll.psapi.GetProcessMemoryInfo  # type: ignore[attr-defined]
+            api.argtypes = [  # type: ignore[attr-defined]
+                ctypes.c_void_p,
+                ctypes.POINTER(_PROCESS_MEMORY_COUNTERS),
+                ctypes.c_ulong,
+            ]
+            api.restype = ctypes.c_bool  # type: ignore[attr-defined]
+            if api(
+                ctypes.windll.kernel32.GetCurrentProcess(),  # type: ignore[attr-defined]
+                ctypes.byref(counters),
+                counters.cb,
+            ):
+                return f"{counters.WorkingSetSize / 1024 / 1024:.1f} MB"
+        except Exception:  # noqa: BLE001
+            pass
+    else:
+        try:
+            import resource
+
+            kb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+            # Linux reports KB; macOS reports bytes.
+            rss = kb / 1024 if sys.platform.startswith("linux") else kb / 1024 / 1024
+            return f"{rss:.1f} MB"
+        except Exception:  # noqa: BLE001
+            pass
+
+    return "?"
 
 
 async def ingest_document(
