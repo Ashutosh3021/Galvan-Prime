@@ -106,11 +106,7 @@ def _build_messages(
 QUESTION:
 {question}"""
 
-    return (
-        [SystemMessage(content=_SYSTEM_PROMPT)]
-        + history
-        + [HumanMessage(content=human_content)]
-    )
+    return [SystemMessage(content=_SYSTEM_PROMPT)] + history + [HumanMessage(content=human_content)]
 
 
 # ── Main entry point ──────────────────────────────────────────────────────────

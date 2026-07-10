@@ -182,9 +182,7 @@ class PineconeStore:
         try:
             from pinecone import Pinecone, ServerlessSpec  # type: ignore
         except ImportError as exc:
-            raise ImportError(
-                "Install the 'pinecone-client' package to use PineconeStore"
-            ) from exc
+            raise ImportError("Install the 'pinecone-client' package to use PineconeStore") from exc
 
         from config import get_settings
 
@@ -198,9 +196,7 @@ class PineconeStore:
                 name=index_name,
                 dimension=dimension,
                 metric="cosine",
-                spec=ServerlessSpec(
-                    cloud="aws", region=s.pinecone_environment or "us-east-1"
-                ),
+                spec=ServerlessSpec(cloud="aws", region=s.pinecone_environment or "us-east-1"),
             )
             logger.info("PineconeStore: created index '%s'", index_name)
 

@@ -28,9 +28,7 @@ _runs: dict[str, dict] = {}
 # ── Background task ───────────────────────────────────────────────────────────
 
 
-async def _run_eval_background(
-    run_id: str, collection: str, test_set: list[dict]
-) -> None:
+async def _run_eval_background(run_id: str, collection: str, test_set: list[dict]) -> None:
     try:
         scores = await run_evaluation(
             collection=collection,
@@ -114,9 +112,7 @@ async def get_metrics(
 ) -> list[MetricOut]:
     run = _runs.get(str(run_id))
     if run is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Eval run not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Eval run not found")
 
     if run["status"] == "running":
         raise HTTPException(
