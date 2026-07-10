@@ -170,7 +170,7 @@ export default function IngestPage() {
               </h2>
             </div>
             <div className="p-4">
-              <DocumentList />
+              <DocumentList collection={collection} />
             </div>
           </div>
         </div>

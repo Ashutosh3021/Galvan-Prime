@@ -49,7 +49,7 @@ function DocumentRow({ doc, onDelete }: { doc: DocumentRecord; onDelete: (id: st
   );
 }
 
-export function DocumentList({ collection }: { collection?: string }) {
+export function DocumentList({ collection }: { collection: string }) {
   const { data: docs = [], isLoading, isError, refetch } = useDocuments(collection);
   const deleteMutation = useDeleteDocument();
   const { toast } = useToast();
@@ -58,7 +58,7 @@ export function DocumentList({ collection }: { collection?: string }) {
   async function handleConfirmDelete() {
     if (!confirmDoc) return;
     try {
-      await deleteMutation.mutateAsync(confirmDoc.id);
+      await deleteMutation.mutateAsync({ docId: confirmDoc.id, collection });
       toast('success', `Deleted "${confirmDoc.src}"`);
     } catch (err) {
       toast('error', err instanceof Error ? err.message : 'Failed to delete document');

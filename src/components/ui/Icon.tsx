@@ -63,10 +63,8 @@ import {
   Trash2,
   TrendingUp,
   Upload,
-  UploadCloud,
   User,
   X,
-  XCircle,
   Radio,
   BadgeCheck,
   Target,
@@ -75,7 +73,7 @@ import {
   FilePlus,
   type LucideProps,
 } from 'lucide-react';
-import type { FC } from 'react';
+import type { CSSProperties, FC } from 'react';
 
 // ── Icon name → Lucide component map ─────────────────────────────────────────
 const ICON_MAP: Record<string, FC<LucideProps>> = {
@@ -173,6 +171,7 @@ interface IconProps {
   /** When true, applies fill style (Lucide uses fill="currentColor") */
   filled?: boolean;
   'aria-hidden'?: boolean;
+  style?: CSSProperties;
 }
 
 export function Icon({
