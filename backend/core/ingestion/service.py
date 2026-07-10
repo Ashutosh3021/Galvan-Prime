@@ -190,6 +190,7 @@ async def ingest_document(
     # ── 3. Embed (thread pool) ────────────────────────────────────────────────
     logger.info("Pre-embed RSS=%s chunks=%d", _rss_mb(), len(chunks))
     encoder = get_encoder()
+    logger.info("Post model load RSS=%s", _rss_mb())
     loop = asyncio.get_running_loop()
     embeddings: list[list[float]] = await loop.run_in_executor(
         _executor,
