@@ -70,6 +70,7 @@ def _rss_mb() -> str:
 
     if sys.platform.startswith("win"):
         try:
+
             class _PROCESS_MEMORY_COUNTERS(ctypes.Structure):
                 _fields_ = [
                     ("cb", ctypes.c_ulong),
@@ -332,7 +333,11 @@ def get_documents(persist_dir: str, collection: Optional[str] = None) -> list[di
             if not doc_id:
                 continue
             match = next(
-                (d for d in docs if d["doc_id"] == doc_id and d["collection"] == col.name),
+                (
+                    d
+                    for d in docs
+                    if d["doc_id"] == doc_id and d["collection"] == col.name
+                ),
                 None,
             )
             if match:

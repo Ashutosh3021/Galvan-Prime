@@ -75,7 +75,9 @@ def load_url(url: str, timeout: int = 15) -> list[RawPage]:
         ValueError: If the HTTP request fails or returns a non-200 status.
     """
     try:
-        resp = requests.get(url, timeout=timeout, headers={"User-Agent": "GalvanRAG/1.0"})
+        resp = requests.get(
+            url, timeout=timeout, headers={"User-Agent": "GalvanRAG/1.0"}
+        )
         resp.raise_for_status()
     except requests.RequestException as exc:
         raise ValueError(f"Failed to fetch URL '{url}': {exc}") from exc

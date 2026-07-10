@@ -146,7 +146,9 @@ class TestIngestEndpoint:
             resp = await client.post(
                 "/ingest",
                 data={"collection": "test-col", "chunk_strategy": "fixed"},
-                files={"file": ("test.txt", b"Hello world test content.", "text/plain")},
+                files={
+                    "file": ("test.txt", b"Hello world test content.", "text/plain")
+                },
             )
         assert resp.status_code == 201
         body = resp.json()

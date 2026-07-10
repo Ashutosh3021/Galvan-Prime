@@ -57,4 +57,6 @@ class MetricResult:
     @classmethod
     def from_score(cls, metric: MetricName, score: float) -> "MetricResult":
         target = METRIC_TARGETS[metric]
-        return cls(metric=metric, score=round(score, 4), target=target, passed=score >= target)
+        return cls(
+            metric=metric, score=round(score, 4), target=target, passed=score >= target
+        )

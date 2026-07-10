@@ -48,10 +48,14 @@ _MAX_UPLOAD_BYTES = settings.max_upload_bytes
 )
 async def ingest(
     background_tasks: BackgroundTasks,
-    collection: str = Form(..., min_length=1, max_length=128, description="Target collection name"),
+    collection: str = Form(
+        ..., min_length=1, max_length=128, description="Target collection name"
+    ),
     chunk_strategy: Literal["fixed", "semantic"] = Form("fixed"),
     file: Optional[UploadFile] = File(None, description="PDF or TXT file to upload"),
-    url: Optional[str] = Form(None, description="URL to scrape (alternative to file upload)"),
+    url: Optional[str] = Form(
+        None, description="URL to scrape (alternative to file upload)"
+    ),
 ) -> IngestOut:
     """
     Upload a PDF/TXT file **or** provide a URL.  Exactly one must be supplied.
@@ -102,7 +106,9 @@ async def ingest(
             url=url or None,
         )
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        )
 
     return result
 
