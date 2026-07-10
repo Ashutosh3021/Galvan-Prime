@@ -13,6 +13,12 @@ class Settings(BaseSettings):
     environment: str = "development"
     log_level: str = "INFO"
 
+    # Embedding tier: "free" (lightweight ONNX encoder via fastembed, no
+    # torch) or "paid" (full sentence-transformers/torch). Defaults to
+    # "paid" and only switches to the free path when explicitly set to
+    # "free" — a paid deployment is never silently downgraded.
+    app_tier: str = "paid"
+
     # ── LLM ──────────────────────────────────────────────────
     gemini_api_key: str = ""
     openai_api_key: str = ""

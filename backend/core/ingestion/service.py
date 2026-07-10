@@ -51,6 +51,11 @@ SourceType = Literal["pdf", "url", "txt"]
 # route enforces the same limit at the HTTP layer via settings.max_upload_bytes).
 _MAX_FILE_BYTES = settings.max_upload_bytes
 
+# Chunks are handed to the encoder in batches of this size (not one call for
+# the whole document) so peak embedding memory stays bounded. Tune down on
+# tighter memory ceilings; the encoder still micro-batches internally.
+EMBED_BATCH_SIZE = 16
+
 
 def _rss_mb() -> str:
     """Return current process RSS in MB as a string.
@@ -187,15 +192,19 @@ async def ingest_document(
 
     chunk_texts = [c.text for c in chunks]
 
-    # ── 3. Embed (thread pool) ────────────────────────────────────────────────
+    # ── 3. Embed (thread pool, in batches) ────────────────────────────────────
     logger.info("Pre-embed RSS=%s chunks=%d", _rss_mb(), len(chunks))
     encoder = get_encoder()
     logger.info("Post model load RSS=%s", _rss_mb())
     loop = asyncio.get_running_loop()
-    embeddings: list[list[float]] = await loop.run_in_executor(
-        _executor,
-        partial(encoder.encode, chunk_texts),
-    )
+    embeddings: list[list[float]] = []
+    for i in range(0, len(chunk_texts), EMBED_BATCH_SIZE):
+        batch = chunk_texts[i : i + EMBED_BATCH_SIZE]
+        batch_vecs = await loop.run_in_executor(
+            _executor,
+            partial(encoder.encode, batch),
+        )
+        embeddings.extend(batch_vecs)
     logger.info("Post-embed RSS=%s", _rss_mb())
 
     # ── 4. Store in ChromaDB ──────────────────────────────────────────────────
