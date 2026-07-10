@@ -26,3 +26,11 @@ class CollectionOut(BaseModel):
     doc_count: int
     chunk_count: int
     created_at: datetime
+
+
+class DocumentOut(BaseModel):
+    doc_id: str
+    source: str
+    collection: str
+    chunk_count: int
+    created_at: str

@@ -48,7 +48,7 @@ async def _probe_chroma() -> ServiceStatus:
             client.heartbeat()
 
         await asyncio.wait_for(
-            asyncio.get_event_loop().run_in_executor(None, _check),
+            asyncio.get_running_loop().run_in_executor(None, _check),
             timeout=_PROBE_TIMEOUT,
         )
         latency = int((time.monotonic() - t0) * 1000)
@@ -71,7 +71,7 @@ async def _probe_pinecone() -> ServiceStatus:
             pc.list_indexes()
 
         await asyncio.wait_for(
-            asyncio.get_event_loop().run_in_executor(None, _check),
+            asyncio.get_running_loop().run_in_executor(None, _check),
             timeout=_PROBE_TIMEOUT,
         )
         latency = int((time.monotonic() - t0) * 1000)

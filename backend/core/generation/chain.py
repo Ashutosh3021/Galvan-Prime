@@ -137,7 +137,7 @@ async def run_rag_chain(
     """
     t_start = time.monotonic()
     memory = get_memory_store()
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
 
     # ── 1. Embed query (thread pool) ──────────────────────────────────────────
     encoder = get_encoder()

@@ -85,16 +85,18 @@ export async function getEvalMetrics(): Promise<EvalMetrics> {
   const latest = sorted[sorted.length - 1];
 
   return {
-    faithfulness: latest.faithfulness ?? 0,
-    answer_relevancy: latest.answer_relevancy ?? 0,
-    context_recall: latest.context_recall ?? 0,
-    context_precision: latest.context_precision ?? 0,
+    // Keep null as null — a run with no score (e.g. LLM unconfigured) is
+    // rendered as "—"/"N/A" downstream, not coerced to a misleading 0.00.
+    faithfulness: latest.faithfulness,
+    answer_relevancy: latest.answer_relevancy,
+    context_recall: latest.context_recall,
+    context_precision: latest.context_precision,
     history: sorted.map(r => ({
       timestamp: r.created_at,
-      faithfulness: r.faithfulness ?? 0,
-      answer_relevancy: r.answer_relevancy ?? 0,
-      context_recall: r.context_recall ?? 0,
-      context_precision: r.context_precision ?? 0,
+      faithfulness: r.faithfulness,
+      answer_relevancy: r.answer_relevancy,
+      context_recall: r.context_recall,
+      context_precision: r.context_precision,
     })),
   };
 }

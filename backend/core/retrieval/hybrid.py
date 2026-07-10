@@ -148,7 +148,7 @@ async def hybrid_search(
     Returns:
         List of SearchResult, sorted by descending RRF score.
     """
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
 
     def _run_retrieval():
         store = ChromaStore(collection_name=collection, persist_dir=persist_dir)

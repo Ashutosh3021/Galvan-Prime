@@ -2,17 +2,16 @@
 # GalvanR.A.G — Developer Makefile
 #
 # Usage:
-#   make up          — start full stack (Postgres + backend)
+#   make up          — start backend stack
 #   make up-dev      — start with hot-reload (dev override)
 #   make down        — stop and remove containers
 #   make test        — run backend test suite
 #   make lint        — run ruff + black
-#   make migrate     — run Alembic migrations against local DB
 #   make logs        — tail backend logs
 #   make shell       — open a shell inside the backend container
 # ─────────────────────────────────────────────────────────────────────────────
 
-.PHONY: up up-dev down test lint migrate logs shell build clean
+.PHONY: up up-dev down test lint logs shell build clean
 
 COMPOSE      = docker compose
 COMPOSE_DEV  = docker compose -f docker-compose.yml -f docker-compose.override.yml
@@ -64,15 +63,6 @@ lint:
 lint-fix:
 	cd $(BACKEND_DIR) && $(VENV_PYTHON) -m ruff check . --fix
 	cd $(BACKEND_DIR) && $(VENV_PYTHON) -m black .
-
-# ── Database ──────────────────────────────────────────────────────────────────
-
-migrate:
-	cd $(BACKEND_DIR) && $(VENV_PYTHON) -m alembic upgrade head
-
-migrate-new:
-	@read -p "Migration message: " msg; \
-	cd $(BACKEND_DIR) && $(VENV_PYTHON) -m alembic revision --autogenerate -m "$$msg"
 
 # ── Cleanup ───────────────────────────────────────────────────────────────────
 

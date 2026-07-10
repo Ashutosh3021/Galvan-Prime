@@ -2,15 +2,16 @@ import { Icon } from '../ui/Icon';
 
 interface MetricCardProps {
   label: string;
-  value: number;
+  value: number | null;
   target: number;
   icon: string;
   color: string;
 }
 
 export function MetricCard({ label, value, target, icon, color }: MetricCardProps) {
-  const passes = value >= target;
-  const pct = Math.round(value * 100);
+  const isNull = value == null;
+  const passes = !isNull && value >= target;
+  const pct = isNull ? 0 : Math.round(value * 100);
   const targetPct = Math.round(target * 100);
 
   return (
@@ -23,7 +24,7 @@ export function MetricCard({ label, value, target, icon, color }: MetricCardProp
       </div>
 
       <div className="flex items-baseline gap-3">
-        <span className="text-[36px] font-bold leading-none text-on-surface">{value.toFixed(2)}</span>
+        <span className="text-[36px] font-bold leading-none text-on-surface">{isNull ? '—' : value.toFixed(2)}</span>
         <span className={`text-[12px] font-bold px-2 py-1 rounded-full ${passes ? 'bg-[#22c55e]/15 text-[#22c55e]' : 'bg-[#ef4444]/15 text-[#ef4444]'}`} role="status">
           {passes ? '✓ PASS' : '✗ FAIL'}
         </span>
@@ -34,7 +35,7 @@ export function MetricCard({ label, value, target, icon, color }: MetricCardProp
           <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
         </div>
         <div className="flex justify-between text-[11px] text-on-surface-variant/60">
-          <span>Score: {pct}%</span>
+          <span>Score: {isNull ? '—' : `${pct}%`}</span>
           <span>Target: &gt;{targetPct}%</span>
         </div>
       </div>

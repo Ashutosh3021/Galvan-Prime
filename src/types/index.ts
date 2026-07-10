@@ -57,17 +57,17 @@ export interface QueryResponse {
 
 export interface EvalMetricsHistory {
   timestamp: string;
-  faithfulness: number;
-  answer_relevancy: number;
-  context_recall: number;
-  context_precision: number;
+  faithfulness: number | null;
+  answer_relevancy: number | null;
+  context_recall: number | null;
+  context_precision: number | null;
 }
 
 export interface EvalMetrics {
-  faithfulness: number;
-  answer_relevancy: number;
-  context_recall: number;
-  context_precision: number;
+  faithfulness: number | null;
+  answer_relevancy: number | null;
+  context_recall: number | null;
+  context_precision: number | null;
   history: EvalMetricsHistory[];
 }
 

@@ -14,9 +14,9 @@ const METRIC_CONFIG = [
   { key: 'context_precision' as const, label: 'Context Precision', target: 0.75, icon: 'precision_manufacturing', color: '#FF6600' },
 ];
 
-function exportCsv(history: { timestamp: string; faithfulness: number; answer_relevancy: number; context_recall: number; context_precision: number }[]) {
+function exportCsv(history: { timestamp: string; faithfulness: number | null; answer_relevancy: number | null; context_recall: number | null; context_precision: number | null }[]) {
   const header = 'timestamp,faithfulness,answer_relevancy,context_recall,context_precision\n';
-  const rows = history.map(h => `${h.timestamp},${h.faithfulness},${h.answer_relevancy},${h.context_recall},${h.context_precision}`).join('\n');
+  const rows = history.map(h => `${h.timestamp},${h.faithfulness ?? 'N/A'},${h.answer_relevancy ?? 'N/A'},${h.context_recall ?? 'N/A'},${h.context_precision ?? 'N/A'}`).join('\n');
   const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

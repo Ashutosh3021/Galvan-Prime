@@ -3,7 +3,14 @@ import type { EvalMetricsHistory } from '../../types';
 
 const TARGETS = { faithfulness: 0.80, answer_relevancy: 0.75, context_recall: 0.70, context_precision: 0.75 };
 
-function ScoreBadge({ value, target }: { value: number; target: number }) {
+function ScoreBadge({ value, target }: { value: number | null; target: number }) {
+  if (value == null) {
+    return (
+      <span className="inline-block text-[12px] font-bold font-mono px-2 py-0.5 rounded text-on-surface-variant bg-surface-container-high">
+        N/A
+      </span>
+    );
+  }
   const passes = value >= target;
   return (
     <span className={`inline-block text-[12px] font-bold font-mono px-2 py-0.5 rounded ${passes ? 'text-[#22c55e] bg-[#22c55e]/15' : 'text-[#ef4444] bg-[#ef4444]/15'}`}>
@@ -13,7 +20,8 @@ function ScoreBadge({ value, target }: { value: number; target: number }) {
 }
 
 function rowPasses(row: EvalMetricsHistory): boolean {
-  return row.faithfulness >= TARGETS.faithfulness && row.answer_relevancy >= TARGETS.answer_relevancy && row.context_recall >= TARGETS.context_recall && row.context_precision >= TARGETS.context_precision;
+  // A missing score counts as a failure (null → 0 < target).
+  return (row.faithfulness ?? 0) >= TARGETS.faithfulness && (row.answer_relevancy ?? 0) >= TARGETS.answer_relevancy && (row.context_recall ?? 0) >= TARGETS.context_recall && (row.context_precision ?? 0) >= TARGETS.context_precision;
 }
 
 export function HistoryTable({ history, onExportCsv }: { history: EvalMetricsHistory[]; onExportCsv: () => void }) {

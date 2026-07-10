@@ -22,9 +22,9 @@ from fastapi import (
 )
 
 from config import get_settings
-from core.ingestion.service import get_collections, ingest_document
+from core.ingestion.service import get_collections, get_documents, ingest_document
 from core.retrieval.vectorstore import ChromaStore
-from schemas.ingest import CollectionOut, IngestOut
+from schemas.ingest import CollectionOut, DocumentOut, IngestOut
 
 router = APIRouter(prefix="/ingest", tags=["ingest"])
 settings = get_settings()
@@ -34,7 +34,7 @@ _ALLOWED_TYPES = {
     "text/plain": "txt",
     "text/csv": "txt",
 }
-_MAX_UPLOAD_BYTES = 50 * 1024 * 1024  # 50 MB
+_MAX_UPLOAD_BYTES = settings.max_upload_bytes
 
 
 # ── POST /ingest ──────────────────────────────────────────────────────────────
@@ -118,6 +118,19 @@ async def ingest(
 async def list_collections() -> list[CollectionOut]:
     rows = get_collections(persist_dir=settings.chroma_persist_dir)
     return [CollectionOut(**row) for row in rows]
+
+
+# ── GET /ingest/documents ──────────────────────────────────────────────────
+
+
+@router.get(
+    "/documents",
+    response_model=list[DocumentOut],
+    summary="List documents with real doc_id/source from ChromaDB",
+)
+async def list_documents(collection: Optional[str] = None) -> list[DocumentOut]:
+    rows = get_documents(persist_dir=settings.chroma_persist_dir, collection=collection)
+    return [DocumentOut(**row) for row in rows]
 
 
 # ── DELETE /ingest/{doc_id} ───────────────────────────────────────────────────

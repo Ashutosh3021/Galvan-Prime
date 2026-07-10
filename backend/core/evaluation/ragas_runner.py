@@ -140,7 +140,7 @@ async def run_evaluation(
         return {m.name: None for m in METRICS}  # type: ignore[attr-defined]
 
     # ── Step 4: run RAGAS evaluate() in thread pool ───────────────────────────
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
 
     def _run_ragas() -> dict[str, float]:
         from ragas import evaluate  # type: ignore

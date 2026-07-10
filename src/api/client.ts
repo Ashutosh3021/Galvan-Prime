@@ -3,7 +3,6 @@
  *
  * Central HTTP client for all GalvanR.A.G API calls.
  * - Base URL from VITE_API_URL (default: http://localhost:8000)
- * - Mock mode when VITE_MOCK=true — imports and returns mock data instead
  * - 10 second timeout on every request
  * - Throws a typed ApiError on non-2xx or timeout
  */

@@ -29,7 +29,7 @@ function formatTs(iso: string): string {
 
 interface TooltipPayload {
   name: string;
-  value: number;
+  value: number | null;
   color: string;
 }
 
@@ -46,7 +46,7 @@ function CustomTooltip({ active, payload, label }: {
         <div key={p.name} className="flex items-center gap-2 mb-1">
           <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: p.color }} />
           <span className="text-[#dee2f5]">{p.name}:</span>
-          <span className="font-mono font-bold" style={{ color: p.color }}>{p.value.toFixed(3)}</span>
+          <span className="font-mono font-bold" style={{ color: p.color }}>{p.value == null ? 'N/A' : p.value.toFixed(3)}</span>
         </div>
       ))}
     </div>

@@ -31,11 +31,12 @@ interface BackendIngestOut {
 }
 
 /**
- * Shape returned by GET /ingest/collections (CollectionOut schema)
+ * Shape returned by GET /ingest/documents (DocumentOut schema)
  */
-interface BackendCollectionOut {
-  name: string;
-  doc_count: number;
+interface BackendDocumentOut {
+  doc_id: string;
+  source: string;
+  collection: string;
   chunk_count: number;
   created_at: string;
 }
@@ -79,25 +80,22 @@ export async function ingestUrl(
 }
 
 /**
- * Fetches all collections from GET /ingest/collections and maps them
- * to DocumentRecord format so the existing CollectionsPage/useDocuments
- * hooks continue to work without modification.
+ * Fetches real per-document records from GET /ingest/documents (reconstructed
+ * from ChromaDB metadata: real doc_id + source).  Returns DocumentRecord
+ * objects carrying genuine doc_ids so deletion targets a real vector set.
  */
-export async function getDocuments(_collection?: string): Promise<DocumentRecord[]> {
-  const collections = await apiGet<BackendCollectionOut[]>('/ingest/collections');
-  // Map each collection to a synthetic DocumentRecord so the UI renders correctly.
-  // doc_id doubles as the collection name (used for display only, not deletion).
-  const records: DocumentRecord[] = collections.map(c => ({
-    doc_id: c.name,
-    source: c.name,
-    chunks: c.chunk_count,
-    collection: c.name,
-    created_at: c.created_at,
+export async function getDocuments(collection?: string): Promise<DocumentRecord[]> {
+  const url = collection
+    ? `/ingest/documents?collection=${encodeURIComponent(collection)}`
+    : '/ingest/documents';
+  const docs = await apiGet<BackendDocumentOut[]>(url);
+  return docs.map(d => ({
+    doc_id: d.doc_id,
+    source: d.source,
+    chunks: d.chunk_count,
+    collection: d.collection,
+    created_at: d.created_at,
   }));
-  if (_collection) {
-    return records.filter(r => r.collection === _collection);
-  }
-  return records;
 }
 
 export async function deleteDocument(docId: string, collection: string): Promise<{ success: boolean }> {

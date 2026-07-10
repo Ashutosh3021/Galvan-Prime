@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     pinecone_environment: str = ""
     chroma_persist_dir: str = "./chroma_db"
 
+    # ── Upload limits ───────────────────────────────────────
+    # Single source of truth for the max ingest upload size (bytes).
+    # Referenced by both the HTTP route and the ingestion service.
+    max_upload_bytes: int = 50 * 1024 * 1024  # 50 MB
+
     # ── CORS ─────────────────────────────────────────────────
     # Optional comma-separated extra origins, e.g. Vercel preview URLs.
     # The production Vercel origin is always allowed in code; this is
