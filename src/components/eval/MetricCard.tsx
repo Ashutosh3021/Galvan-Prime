@@ -11,33 +11,24 @@ interface MetricCardProps {
 export function MetricCard({ label, value, target, icon, color }: MetricCardProps) {
   const isNull = value == null;
   const passes = !isNull && value >= target;
-  const pct = isNull ? 0 : Math.round(value * 100);
-  const targetPct = Math.round(target * 100);
 
   return (
-    <div className="bg-surface-container border border-surface-container-high rounded-xl p-5 flex flex-col gap-3 relative overflow-hidden hover:border-surface-variant transition-colors">
-      <div className="absolute top-0 left-0 w-full h-0.5 transition-opacity" style={{ background: color, opacity: passes ? 0.8 : 0.4 }} aria-hidden="true" />
-
-      <div className="flex items-center justify-between">
-        <span className="text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant uppercase">{label}</span>
-        <Icon name={icon} size={18} filled className="flex-shrink-0" style={{ color }} />
+    <div className="flex items-center justify-between py-2.5 border-b border-rule last:border-b-0">
+      <div className="flex items-center gap-2 min-w-0">
+        <Icon name={icon} size={16} filled className="flex-shrink-0" style={{ color }} />
+        <span className="text-[14px] font-medium text-ink truncate">{label}</span>
       </div>
-
-      <div className="flex items-baseline gap-3">
-        <span className="text-[36px] font-bold leading-none text-on-surface">{isNull ? '—' : value.toFixed(2)}</span>
-        <span className={`text-[12px] font-bold px-2 py-1 rounded-full ${passes ? 'bg-[#22c55e]/15 text-[#22c55e]' : 'bg-[#ef4444]/15 text-[#ef4444]'}`} role="status">
-          {passes ? '✓ PASS' : '✗ FAIL'}
+      <div className="flex items-center gap-3 flex-shrink-0">
+        <span className="font-mono text-[15px] text-ink">{isNull ? '—' : value.toFixed(2)}</span>
+        <span
+          className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${passes ? 'bg-pass/15 text-pass' : 'bg-warn/15 text-warn'}`}
+          role="status"
+        >
+          {passes ? 'PASS' : 'FAIL'}
         </span>
-      </div>
-
-      <div className="space-y-1">
-        <div className="w-full bg-surface-container-lowest h-1.5 rounded-full overflow-hidden" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={`${label}: ${pct}%`}>
-          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
-        </div>
-        <div className="flex justify-between text-[11px] text-on-surface-variant/60">
-          <span>Score: {isNull ? '—' : `${pct}%`}</span>
-          <span>Target: &gt;{targetPct}%</span>
-        </div>
+        <span className="font-mono text-[12px] text-ink-soft w-24 text-right hidden sm:inline">
+          target › {Math.round(target * 100)}%
+        </span>
       </div>
     </div>
   );

@@ -201,7 +201,12 @@ export default function DesktopQuery() {
           </div>
         </div>
 
-        <ChatWindow messages={messages} isLoading={isLoading} error={error} />
+        <ChatWindow
+          messages={messages}
+          isLoading={isLoading}
+          error={error}
+          onSample={() => void sendMessage("What are the main findings?", provider)}
+        />
 
         <InputArea
           onSend={q => void sendMessage(q, provider)}

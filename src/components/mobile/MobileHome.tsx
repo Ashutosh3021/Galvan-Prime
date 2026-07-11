@@ -5,42 +5,15 @@ import { useEvalMetrics } from '../../hooks/useEval';
 
 export function MobileTopAppBar({ title }: { title: string }) {
   return (
-    <header className="bg-[#001231] border-b border-[#5a4136] flex justify-between items-center w-full px-6 py-4 sticky top-0 z-30">
+    <header className="bg-paper border-b border-rule flex justify-between items-center w-full px-6 py-4 sticky top-0 z-30">
       <div className="flex items-center gap-2">
-        <Icon name="terminal" size={20} className="text-[#ff6600]" />
-        <h1 className="text-[24px] font-bold text-[#ff6600] tracking-tight">{title}</h1>
+        <Icon name="terminal" size={20} className="text-cite" />
+        <h1 className="text-[22px] font-bold text-ink tracking-tight">{title}</h1>
       </div>
-      <div className="w-8 h-8 rounded-full bg-[#133466] flex items-center justify-center border border-[#5a4136]">
-        <Icon name="person" size={18} className="text-[#e3bfb1]" />
+      <div className="w-8 h-8 rounded-full bg-paper-deep flex items-center justify-center border border-rule">
+        <Icon name="person" size={18} className="text-ink-soft" />
       </div>
     </header>
-  );
-}
-
-function MobileMetric({ label, value, status, icon }: { label: string; value: number; status: 'good' | 'warn'; icon: string }) {
-  const isGood = status === 'good';
-  return (
-    <div className="bg-[#1A2338] border border-[#2D3748] rounded-lg p-6 flex flex-col gap-2">
-      <div className="flex items-center justify-between text-[#e3bfb1]">
-        <span className="text-[14px]">{label}</span>
-        <Icon name={icon} size={18} className="text-[#e3bfb1]" />
-      </div>
-      <div className="flex items-end gap-2">
-        <span className={`text-[32px] font-bold ${isGood ? 'text-[#10B981]' : 'text-[#F59E0B]'}`}>
-          {value > 0 ? value.toFixed(2) : '—'}
-        </span>
-        {value > 0 && (
-          <span className={`text-[12px] font-bold mb-1 ${isGood ? 'text-[#10B981]' : 'text-[#F59E0B]'}`}>
-            {isGood ? 'GOOD' : 'WARN'}
-          </span>
-        )}
-      </div>
-      {value > 0 && (
-        <div className="w-full bg-[#000d27] h-1 rounded-full overflow-hidden">
-          <div className={`h-full ${isGood ? 'bg-[#10B981]' : 'bg-[#F59E0B]'}`} style={{ width: `${value * 100}%` }} />
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -55,40 +28,72 @@ export default function MobileHome() {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  const faithfulness = metrics?.faithfulness ?? 0;
-  const answerRelevancy = metrics?.answer_relevancy ?? 0;
-  const contextRecall = metrics?.context_recall ?? 0;
+  const fmt = (v?: number) => (v && v > 0 ? v.toFixed(2) : '—');
 
   return (
-    <div className="text-[#d7e2ff] font-sans flex flex-col" style={{ backgroundColor: '#0A0F1C' }}>
+    <div className="text-ink font-sans flex flex-col min-h-dvh" style={{ backgroundColor: '#E9E0CC' }}>
       <MobileTopAppBar title="GalvanR.A.G" />
       <div className="flex-1 overflow-y-auto p-6 lg:p-8">
         <div className="max-w-5xl mx-auto space-y-8">
-          <section className="text-center md:text-left py-8">
-            <h2 className="text-[32px] font-bold leading-tight tracking-[-0.02em] text-[#d7e2ff] mb-4">
-              Self-hostable RAG pipeline.{' '}
-              <span className="text-[#e3bfb1]">Upload docs. Get cited answers. Measure quality.</span>
+          <section className="py-4">
+            <h2 className="text-[28px] font-bold leading-tight tracking-[-0.02em] text-ink mb-3">
+              Self-hosted RAG.{' '}
+              <span className="text-ink-soft">Upload docs. Get answers you can trace back to the source.</span>
             </h2>
-            <div className="w-16 h-1 bg-[#ff6600] rounded-full mx-auto md:mx-0 mb-6" />
-            <div className="hidden md:inline-flex bg-[#0D1117] rounded-lg border border-[#2D3748] p-4 items-center gap-4 shadow-lg w-full md:w-auto max-w-full overflow-hidden">
-              <Icon name="terminal" size={16} className="text-[#e3bfb1] flex-shrink-0" />
-              <code className="font-mono text-[13px] text-[#00BFFF] truncate">{command}</code>
-              <button onClick={handleCopy} title="Copy to clipboard" className="ml-2 p-1 text-[#e3bfb1] hover:text-[#d7e2ff] transition-colors flex-shrink-0">
-                <Icon name={copied ? 'check' : 'content_copy'} size={16} />
-              </button>
+            <p className="text-[15px] leading-relaxed text-ink-soft">
+              Upload PDFs, URLs, or text. Ask in plain language. Every answer links to the exact
+              chunk it came from — and a RAGAS score tells you how far to trust it.
+            </p>
+          </section>
+
+          {/* Signature: citation-highlight moment */}
+          <section>
+            <div className="bg-paper-deep border border-rule rounded-xl p-5">
+              <p className="text-[11px] font-semibold tracking-[0.08em] uppercase text-ink-soft mb-2">
+                An answer, shown the way the product shows it
+              </p>
+              <p className="font-serif text-[17px] leading-relaxed text-ink">
+                The model reports a 12% yield,{' '}
+                <span className="bg-cite/15 underline decoration-cite decoration-2 underline-offset-2 rounded-sm px-0.5">
+                  but only on the third pass
+                </span>.¹
+              </p>
+              <div className="mt-3 pt-3 border-t border-rule flex items-baseline gap-2">
+                <span className="font-mono text-[12px] text-cite">¹</span>
+                <span className="font-mono text-[12px] text-ink-soft">pdf · p.4 · chunk 2</span>
+              </div>
             </div>
           </section>
 
-          <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <MobileMetric label="Faithfulness"     value={faithfulness}   status={faithfulness >= 0.80 ? 'good' : 'warn'}   icon="verified" />
-            <MobileMetric label="Answer Relevancy" value={answerRelevancy} status={answerRelevancy >= 0.75 ? 'good' : 'warn'} icon="target"   />
-            <MobileMetric label="Context Recall"   value={contextRecall}  status={contextRecall >= 0.70 ? 'good' : 'warn'}  icon="memory"   />
+          {/* Install command */}
+          <section className="flex items-center justify-between bg-paper-deep border border-rule rounded-lg p-4 gap-3">
+            <code className="font-mono text-[12px] text-ink truncate">{command}</code>
+            <button
+              onClick={handleCopy}
+              title="Copy to clipboard"
+              aria-label="Copy install command"
+              className="text-ink-soft hover:text-ink transition-colors flex-shrink-0"
+            >
+              <Icon name={copied ? 'check' : 'content_copy'} size={16} />
+            </button>
           </section>
 
-          <section className="flex justify-center md:justify-start pt-6">
-            <Link to="/query" className="bg-[#ff6600] text-white px-8 py-4 rounded-lg text-[20px] font-semibold hover:opacity-90 active:scale-95 transition-all shadow-lg flex items-center gap-2">
-              Go to Dashboard
-              <Icon name="arrow_forward" size={22} />
+          {/* Quiet stat strip */}
+          <section className="flex items-center justify-center gap-4 text-[12px] font-mono text-ink-soft">
+            <span>faith. <span className="text-ink font-semibold">{fmt(metrics?.faithfulness)}</span></span>
+            <span aria-hidden="true">·</span>
+            <span>rel. <span className="text-ink font-semibold">{fmt(metrics?.answer_relevancy)}</span></span>
+            <span aria-hidden="true">·</span>
+            <span>rec. <span className="text-ink font-semibold">{fmt(metrics?.context_recall)}</span></span>
+          </section>
+
+          <section className="flex justify-center pt-2">
+            <Link
+              to="/query"
+              className="bg-ink text-paper px-8 py-4 rounded-lg text-[18px] font-semibold flex items-center gap-2 hover:opacity-90 transition-opacity"
+            >
+              Open the query console
+              <Icon name="arrow_forward" size={20} />
             </Link>
           </section>
         </div>

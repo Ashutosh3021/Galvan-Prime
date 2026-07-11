@@ -67,7 +67,7 @@ export function DropZone({ onFile, disabled = false }: DropZoneProps) {
         ${isDragging
           ? 'border-primary-container bg-primary-container/5 scale-[1.01]'
           : dragError
-            ? 'border-[#ef4444]/60 bg-[#ef4444]/5'
+            ? 'border-warn/60 bg-warn/5'
             : 'border-surface-container-high hover:border-primary-container/50 hover:bg-surface-container/50'
         }
       `}
@@ -112,8 +112,8 @@ export function DropZone({ onFile, disabled = false }: DropZoneProps) {
       </p>
 
       {dragError && (
-        <p role="alert" className="mt-3 text-[13px] font-semibold text-[#ef4444] flex items-center justify-center gap-1">
-          <Icon name="error" size={14} />
+        <p role="alert" className="mt-3 text-[13px] font-semibold text-warn flex items-center justify-center gap-1">
+          <Icon name="error" size={14} className="text-warn" />
           {dragError}
         </p>
       )}

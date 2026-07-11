@@ -13,7 +13,7 @@ function ScoreBadge({ value, target }: { value: number | null; target: number })
   }
   const passes = value >= target;
   return (
-    <span className={`inline-block text-[12px] font-bold font-mono px-2 py-0.5 rounded ${passes ? 'text-[#22c55e] bg-[#22c55e]/15' : 'text-[#ef4444] bg-[#ef4444]/15'}`}>
+    <span className={`inline-block text-[12px] font-bold font-mono px-2 py-0.5 rounded ${passes ? 'text-pass bg-pass/15' : 'text-warn bg-warn/15'}`}>
       {value.toFixed(3)}
     </span>
   );
@@ -47,10 +47,10 @@ export function HistoryTable({ history, onExportCsv }: { history: EvalMetricsHis
           <thead>
             <tr className="bg-surface-container-lowest border-b border-surface-container-high">
               <th className="p-3 text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant whitespace-nowrap">Run Time</th>
-              <th className="p-3 text-[12px] font-semibold tracking-[0.05em] text-[#00BFFF] text-center">Faithfulness</th>
-              <th className="p-3 text-[12px] font-semibold tracking-[0.05em] text-[#22C55E] text-center">Ans. Relevancy</th>
-              <th className="p-3 text-[12px] font-semibold tracking-[0.05em] text-[#FACC15] text-center">Ctx. Recall</th>
-              <th className="p-3 text-[12px] font-semibold tracking-[0.05em] text-[#FF6600] text-center">Ctx. Precision</th>
+              <th className="p-3 text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant text-center">Faithfulness</th>
+              <th className="p-3 text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant text-center">Ans. Relevancy</th>
+              <th className="p-3 text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant text-center">Ctx. Recall</th>
+              <th className="p-3 text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant text-center">Ctx. Precision</th>
               <th className="p-3 text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant text-center">Status</th>
             </tr>
           </thead>
@@ -65,7 +65,7 @@ export function HistoryTable({ history, onExportCsv }: { history: EvalMetricsHis
                 <td className="p-3 text-center"><ScoreBadge value={row.context_recall} target={TARGETS.context_recall} /></td>
                 <td className="p-3 text-center"><ScoreBadge value={row.context_precision} target={TARGETS.context_precision} /></td>
                 <td className="p-3 text-center">
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${rowPasses(row) ? 'bg-[#22c55e]/15 text-[#22c55e]' : 'bg-[#ef4444]/15 text-[#ef4444]'}`}>
+                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${rowPasses(row) ? 'bg-pass/15 text-pass' : 'bg-warn/15 text-warn'}`}>
                     {rowPasses(row) ? 'PASS' : 'FAIL'}
                   </span>
                 </td>

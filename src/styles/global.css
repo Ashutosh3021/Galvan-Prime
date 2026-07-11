@@ -21,9 +21,9 @@ html {
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', sans-serif;
-  background-color: #090e1b;
-  color: #dee2f5;
+  font-family: 'Space Grotesk', sans-serif;
+  background-color: #E9E0CC;
+  color: #211C15;
   min-height: 100dvh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -33,17 +33,12 @@ body {
 /* ─── Global focus-visible ring ─── */
 /* Keyboard users get a clear focus ring; mouse clicks don't. */
 :focus-visible {
-  outline: 2px solid #ff6600;
+  outline: 2px solid #1E4E8C;
   outline-offset: 2px;
   border-radius: 4px;
 }
 :focus:not(:focus-visible) {
   outline: none;
-}
-
-/* ─── AI Glow Effect ─── */
-.ai-glow:hover {
-  box-shadow: 0 0 15px 2px rgba(255, 102, 0, 0.4);
 }
 
 /* ─── Custom Range Slider ─── */
@@ -58,22 +53,18 @@ input[type='range']::-webkit-slider-thumb {
   height: 16px;
   width: 16px;
   border-radius: 50%;
-  background: #ff6600;
+  background: #211C15;
   cursor: pointer;
   margin-top: -6px;
-  box-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
+  border: 2px solid #E9E0CC;
 }
 
 input[type='range']::-webkit-slider-runnable-track {
   width: 100%;
   height: 4px;
   cursor: pointer;
-  background: #303443;
+  background: #C7B99C;
   border-radius: 2px;
-}
-
-input[type='range']:focus {
-  outline: none;
 }
 
 /* ─── Custom Scrollbar ─── */
@@ -86,7 +77,7 @@ input[type='range']:focus {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #2d3748;
+  background-color: #C7B99C;
   border-radius: 10px;
 }
 
@@ -102,70 +93,51 @@ input[type='range']:focus {
 
 /* ─── Code Block Base ─── */
 code, pre {
-  font-family: 'JetBrains Mono', 'Geist', monospace;
+  font-family: 'IBM Plex Mono', 'monospace';
 }
 
 /* ─── Grid Background Pattern (used in Ingest) ─── */
 .bg-grid-pattern {
   background-size: 40px 40px;
   background-image:
-    linear-gradient(to right, rgba(45, 55, 72, 0.2) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(45, 55, 72, 0.2) 1px, transparent 1px);
-}
-
-/* ─── Sweep Animation for <details> ─── */
-details[open] summary ~ * {
-  animation: sweep 0.3s ease-in-out;
-}
-
-@keyframes sweep {
-  0%   { opacity: 0; margin-top: -10px; }
-  100% { opacity: 1; margin-top: 0; }
-}
-
-/* ─── Details / Summary reset ─── */
-details > summary {
-  list-style: none;
-}
-
-details > summary::-webkit-details-marker {
-  display: none;
+    linear-gradient(to right, rgba(199, 185, 156, 0.5) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(199, 185, 156, 0.5) 1px, transparent 1px);
 }
 
 /* ─── Progress bar custom colours ─── */
 progress::-webkit-progress-bar {
-  background-color: #2d3748;
+  background-color: #C7B99C;
   border-radius: 4px;
 }
 
 progress::-webkit-progress-value {
-  background-color: #ff6600;
+  background-color: #1E4E8C;
   border-radius: 4px;
 }
 
 progress::-moz-progress-bar {
-  background-color: #ff6600;
+  background-color: #1E4E8C;
   border-radius: 4px;
 }
 
-/* ─── Card backgrounds (used across mobile pages) ─── */
-.bg-card    { background-color: #1a2338; }
-.border-card { border-color: #2d3748; }
-.bg-code    { background-color: #0d1117; }
-.text-cyan  { color: #00bfff; }
-.text-warning { color: #f59e0b; }
-.text-success { color: #10b981; }
+/* ─── Card backgrounds ─── */
+.bg-card    { background-color: #DDD2B6; }
+.border-card { border-color: #C7B99C; }
+.bg-code    { background-color: #D2C6A8; }
+.text-cyan  { color: #1E4E8C; }
+.text-warning { color: #A23A28; }
+.text-success { color: #3E7D5A; }
 
-/* ─── Tech Card (Mobile Settings) ─── */
-.tech-card  { background-color: #1a2338; border-color: #2d3748; }
-.tech-input { background-color: #0a0f1c; border-color: #2d3748; }
+/* ─── Tech Card (Settings) ─── */
+.tech-card  { background-color: #DDD2B6; border-color: #C7B99C; }
+.tech-input { background-color: #E9E0CC; border-color: #C7B99C; }
 .tech-input:focus {
-  border-color: #ff6600;
-  box-shadow: 0 0 0 1px #ff6600;
+  border-color: #1E4E8C;
+  box-shadow: 0 0 0 1px #1E4E8C;
   outline: none;
 }
 
-/* ─── Page fade-in ─── */
+/* ─── Page fade-in (content-serving, respects reduced motion) ─── */
 @keyframes pageFadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -175,12 +147,11 @@ progress::-moz-progress-bar {
   animation: pageFadeIn 0.25s ease-out both;
 }
 
-/* ─── Smooth interactive transitions ─── */
-/* Applied to all buttons and links for consistent micro-interactions */
+/* ─── Restrained interactive transitions (colour only, no transforms) ─── */
 button,
 a,
 [role="button"] {
-  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-property: color, background-color, border-color, box-shadow, opacity;
   transition-duration: 150ms;
   transition-timing-function: ease-out;
 }
@@ -190,8 +161,8 @@ a,
   position: absolute;
   top: -100%;
   left: 0;
-  background: #ff6600;
-  color: #fff;
+  background: #211C15;
+  color: #E9E0CC;
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 600;
@@ -201,6 +172,18 @@ a,
 }
 .skip-link:focus {
   top: 0;
-  outline: 2px solid #fff;
+  outline: 2px solid #E9E0CC;
   outline-offset: 2px;
+}
+
+/* ─── Reduced motion: stop all non-essential animation ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

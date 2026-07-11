@@ -8,10 +8,10 @@ import { useCollections } from '../hooks/useIngest';
 import type { EvalTestItem } from '../api/eval';
 
 const METRIC_CONFIG = [
-  { key: 'faithfulness'      as const, label: 'Faithfulness',      target: 0.80, icon: 'verified',                color: '#00BFFF' },
-  { key: 'answer_relevancy'  as const, label: 'Answer Relevancy',  target: 0.75, icon: 'target',                  color: '#22C55E' },
-  { key: 'context_recall'    as const, label: 'Context Recall',    target: 0.70, icon: 'memory',                  color: '#FACC15' },
-  { key: 'context_precision' as const, label: 'Context Precision', target: 0.75, icon: 'precision_manufacturing', color: '#FF6600' },
+  { key: 'faithfulness'      as const, label: 'Faithfulness',      target: 0.80, icon: 'verified',                color: '#1E4E8C' },
+  { key: 'answer_relevancy'  as const, label: 'Answer Relevancy',  target: 0.75, icon: 'target',                  color: '#3E7D5A' },
+  { key: 'context_recall'    as const, label: 'Context Recall',    target: 0.70, icon: 'memory',                  color: '#514739' },
+  { key: 'context_precision' as const, label: 'Context Precision', target: 0.75, icon: 'precision_manufacturing', color: '#A23A28' },
 ];
 
 function exportCsv(history: { timestamp: string; faithfulness: number | null; answer_relevancy: number | null; context_recall: number | null; context_precision: number | null }[]) {
@@ -66,22 +66,21 @@ function EvalRunForm({
   }
 
   return (
-    <div className="bg-surface-container border border-surface-container-high rounded-xl p-5 flex flex-col gap-4">
-      <h2 className="text-[16px] font-semibold text-on-surface flex items-center gap-2">
-        <Icon name="science" size={18} className="text-primary-container" />
+    <div className="bg-paper-deep border border-rule rounded-xl p-5 flex flex-col gap-4">
+      <h2 className="text-[16px] font-semibold text-ink flex items-center gap-2">
+        <Icon name="science" size={18} className="text-cite" />
         Configure Evaluation Run
       </h2>
 
-      {/* Collection selector */}
       <div className="flex flex-col gap-1">
-        <label className="text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant">Collection</label>
+        <label className="text-[12px] font-semibold tracking-[0.05em] text-ink-soft">Collection</label>
         {collections.length === 0 ? (
-          <p className="text-[13px] text-on-surface-variant italic">No collections available — ingest documents first.</p>
+          <p className="text-[13px] text-ink-soft italic">No collections available — ingest documents first.</p>
         ) : (
           <select
             value={collection}
             onChange={e => setCollection(e.target.value)}
-            className="bg-surface border border-surface-container-high rounded px-3 py-2 text-[14px] text-on-surface focus:outline-none focus:border-primary-container"
+            className="bg-paper border border-rule rounded px-3 py-2 text-[14px] text-ink focus:outline-none focus:border-cite"
           >
             <option value="">Select a collection…</option>
             {collections.map(c => (
@@ -91,46 +90,44 @@ function EvalRunForm({
         )}
       </div>
 
-      {/* Test item input */}
       <div className="flex flex-col gap-2">
-        <label className="text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant">Add Test Item</label>
+        <label className="text-[12px] font-semibold tracking-[0.05em] text-ink-soft">Add Test Item</label>
         <input
           type="text"
           placeholder="Question"
           value={question}
           onChange={e => setQuestion(e.target.value)}
-          className="bg-surface border border-surface-container-high rounded px-3 py-2 text-[14px] text-on-surface focus:outline-none focus:border-primary-container"
+          className="bg-paper border border-rule rounded px-3 py-2 text-[14px] text-ink focus:outline-none focus:border-cite"
         />
         <input
           type="text"
           placeholder="Ground truth answer"
           value={groundTruth}
           onChange={e => setGroundTruth(e.target.value)}
-          className="bg-surface border border-surface-container-high rounded px-3 py-2 text-[14px] text-on-surface focus:outline-none focus:border-primary-container"
+          className="bg-paper border border-rule rounded px-3 py-2 text-[14px] text-ink focus:outline-none focus:border-cite"
         />
         <button
           type="button"
           onClick={addItem}
-          className="self-start flex items-center gap-1 px-3 py-1.5 text-[12px] font-semibold rounded border border-surface-container-high text-on-surface hover:bg-surface-container transition-colors"
+          className="self-start flex items-center gap-1 px-3 py-1.5 text-[12px] font-semibold rounded border border-rule text-ink hover:bg-paper transition-colors"
         >
           <Icon name="add" size={14} />
           Add Item
         </button>
       </div>
 
-      {/* Test item list */}
       {items.length > 0 && (
         <ul className="flex flex-col gap-2">
           {items.map((item, i) => (
-            <li key={i} className="flex items-start gap-2 bg-surface rounded px-3 py-2 border border-surface-container-high text-[13px]">
+            <li key={i} className="flex items-start gap-2 bg-paper rounded px-3 py-2 border border-rule text-[13px]">
               <div className="flex-1 min-w-0">
-                <p className="text-on-surface font-medium truncate">Q: {item.question}</p>
-                <p className="text-on-surface-variant truncate">A: {item.ground_truth}</p>
+                <p className="text-ink font-medium truncate">Q: {item.question}</p>
+                <p className="text-ink-soft truncate">A: {item.ground_truth}</p>
               </div>
               <button
                 onClick={() => removeItem(i)}
                 aria-label={`Remove item ${i + 1}`}
-                className="text-on-surface-variant hover:text-[#ef4444] transition-colors flex-shrink-0 mt-0.5"
+                className="text-ink-soft hover:text-warn transition-colors flex-shrink-0 mt-0.5"
               >
                 <Icon name="close" size={14} />
               </button>
@@ -140,7 +137,7 @@ function EvalRunForm({
       )}
 
       {(formError || runError) && (
-        <p role="alert" className="text-[12px] text-[#ef4444] flex items-center gap-1">
+        <p role="alert" className="text-[12px] text-warn flex items-center gap-1">
           <Icon name="error" size={13} />
           {formError ?? runError}
         </p>
@@ -150,7 +147,7 @@ function EvalRunForm({
         onClick={handleSubmit}
         disabled={isRunning || collections.length === 0}
         aria-label={isRunning ? 'Evaluation running…' : 'Run evaluation'}
-        className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-primary-container text-on-primary font-semibold text-[13px] hover:brightness-110 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-primary-container/20 self-start"
+        className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-ink text-paper font-semibold text-[13px] hover:opacity-90 transition-opacity active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed self-start"
       >
         <Icon name={isRunning ? 'sync' : 'play_arrow'} size={18} className={isRunning ? 'animate-spin' : ''} />
         {isRunning ? 'Running evaluation…' : 'Run Evaluation'}
@@ -166,7 +163,7 @@ export default function EvalPage() {
   if (isLoading) {
     return (
       <main id="main-content" className="flex-1 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4 text-on-surface-variant" role="status">
+        <div className="flex flex-col items-center gap-4 text-ink-soft" role="status">
           <Icon name="sync" size={40} className="animate-spin" />
           <p className="text-[14px]">Loading evaluation metrics…</p>
         </div>
@@ -177,10 +174,11 @@ export default function EvalPage() {
   if (isError) {
     return (
       <main id="main-content" className="flex-1 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4 text-[#ef4444]">
+        <div className="flex flex-col items-center gap-4 text-warn max-w-md text-center px-6">
           <Icon name="error" size={40} filled />
-          <p className="text-[14px]">Failed to load evaluation metrics.</p>
-          <button onClick={() => void refetch()} className="px-4 py-2 rounded-lg bg-surface-container border border-surface-container-high text-on-surface text-[13px] hover:bg-surface-container-high transition-colors">
+          <p className="text-[14px] font-semibold">Couldn't reach the evaluation endpoint (/eval).</p>
+          <p className="text-[13px] opacity-80">The API may be down — retry, or check the server logs.</p>
+          <button onClick={() => void refetch()} className="px-4 py-2 rounded-lg bg-paper-deep border border-rule text-ink text-[13px] hover:bg-paper transition-colors">
             Retry
           </button>
         </div>
@@ -192,47 +190,45 @@ export default function EvalPage() {
 
   return (
     <main id="main-content" className="w-full max-w-[1440px] mx-auto px-4 md:px-8 py-8 space-y-8">
-      {/* Header */}
       <div>
-        <h1 className="text-[32px] font-bold leading-tight text-on-surface">Evaluation Suite</h1>
-        <p className="text-[14px] text-on-surface-variant mt-1">RAGAS pipeline quality assessment — all 4 metrics across every run.</p>
+        <h1 className="text-[32px] font-bold leading-tight text-ink">Evaluation Suite</h1>
+        <p className="text-[14px] text-ink-soft mt-1">RAGAS pipeline quality assessment — all 4 metrics across every run.</p>
       </div>
 
-      {/* Run form */}
       <EvalRunForm onRun={triggerRun} isRunning={isRunning} runError={runError} />
 
-      {/* Results — only shown after at least one completed run */}
       {hasRuns && metrics ? (
         <>
-          {/* Metric cards */}
+          {/* Score sheet */}
           <section aria-label="Current metric scores">
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <h2 className="text-[12px] font-semibold tracking-[0.08em] uppercase text-ink-soft mb-2">Score sheet</h2>
+            <div className="bg-paper-deep border border-rule rounded-xl px-5 py-1">
               {METRIC_CONFIG.map(m => (
                 <MetricCard key={m.key} label={m.label} value={metrics[m.key]} target={m.target} icon={m.icon} color={m.color} />
               ))}
             </div>
           </section>
 
-          {/* Chart */}
-          <section className="bg-surface-container border border-surface-container-high rounded-xl p-5" aria-label="Score over time">
-            <h2 className="text-[16px] font-semibold text-on-surface mb-5 flex items-center gap-2">
-              <Icon name="show_chart" size={20} className="text-on-surface-variant" />
+          {/* Ink plot */}
+          <section className="bg-paper-deep border border-rule rounded-xl p-5" aria-label="Score over time">
+            <h2 className="text-[16px] font-semibold text-ink mb-5 flex items-center gap-2">
+              <Icon name="show_chart" size={20} className="text-ink-soft" />
               Score Over Time
             </h2>
             <ScoreChart history={metrics.history} />
           </section>
 
-          {/* History table */}
+          {/* Ledger of runs */}
           <section aria-label="Evaluation history">
             <HistoryTable history={metrics.history} onExportCsv={() => exportCsv(metrics.history)} />
           </section>
         </>
       ) : (
         !isLoading && (
-          <div className="flex flex-col items-center justify-center py-16 text-on-surface-variant gap-3">
-            <Icon name="assessment" size={48} className="opacity-30" />
-            <p className="text-[15px] font-semibold">No evaluation runs yet.</p>
-            <p className="text-[13px] opacity-70">Configure a run above and click Run Evaluation to see results.</p>
+          <div className="flex flex-col items-center justify-center py-16 text-ink-soft gap-3 border border-dashed border-rule rounded-xl">
+            <Icon name="assessment" size={40} className="opacity-40" />
+            <p className="text-[15px] font-semibold text-ink/80">You haven't run an evaluation yet.</p>
+            <p className="text-[13px] opacity-70">Add a question and its ground-truth answer above, then click Run Evaluation.</p>
           </div>
         )
       )}

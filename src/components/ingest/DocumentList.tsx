@@ -9,7 +9,7 @@ function fileIconName(source: string): { icon: string; colorClass: string } {
   if (source.startsWith('http://') || source.startsWith('https://'))
     return { icon: 'link', colorClass: 'text-secondary-container' };
   const ext = source.split('.').pop()?.toLowerCase();
-  if (ext === 'pdf') return { icon: 'picture_as_pdf', colorClass: 'text-[#ef4444]' };
+  if (ext === 'pdf') return { icon: 'picture_as_pdf', colorClass: 'text-warn' };
   return { icon: 'description', colorClass: 'text-on-surface-variant' };
 }
 
@@ -40,7 +40,7 @@ function DocumentRow({ doc, onDelete }: { doc: DocumentRecord; onDelete: (id: st
         <button
           onClick={() => onDelete(doc.doc_id, doc.source)}
           aria-label={`Delete ${doc.source}`}
-          className="p-1.5 rounded text-on-surface-variant hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors"
+          className="p-1.5 rounded text-on-surface-variant hover:text-warn hover:bg-warn/10 transition-colors"
         >
           <Icon name="delete" size={16} />
         </button>
@@ -78,7 +78,7 @@ export function DocumentList({ collection }: { collection: string }) {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 gap-4 text-[#ef4444]">
+      <div className="flex flex-col items-center justify-center py-12 gap-4 text-warn">
         <Icon name="error" size={36} filled />
         <p className="text-[14px]">Failed to load documents.</p>
         <button onClick={() => void refetch()} className="px-4 py-2 rounded-lg bg-surface-container border border-surface-container-high text-on-surface text-[13px] hover:bg-surface-container-high transition-colors">

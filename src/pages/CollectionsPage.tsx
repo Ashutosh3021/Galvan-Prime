@@ -38,7 +38,7 @@ function CollectionCard({
   return (
     <div
       className={`
-        bg-[#1A2338] border rounded-xl p-5 flex flex-col gap-4
+        bg-paper-deep border rounded-xl p-5 flex flex-col gap-4
         group hover:border-primary-container/50 transition-colors relative overflow-hidden
         ${isActive ? 'border-primary-container/60' : 'border-outline-variant'}
       `}
@@ -52,14 +52,14 @@ function CollectionCard({
 
       {/* Hover overlay */}
       <div
-        className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+        className="absolute inset-0 bg-gradient-to-br from-ink/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
         aria-hidden="true"
       />
 
       {/* Header */}
       <div className="flex justify-between items-start">
-        <div className="bg-[#252F4A] p-2 rounded-md border border-[#303C5A]">
-          <Icon name="folder_open" size={22} filled={isActive} className={isActive ? 'text-primary-container' : 'text-secondary'} />
+        <div className="bg-paper-deep p-2 rounded-md border border-rule">
+          <Icon name="folder_open" size={22} filled={isActive} className={isActive ? 'text-primary-container' : 'text-cite'} />
         </div>
         {isActive && (
           <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary-container/20 text-primary-container border border-primary-container/30">
@@ -72,7 +72,7 @@ function CollectionCard({
       <div>
         <h3 className="text-[16px] font-semibold text-on-surface mb-2 font-mono">{collection.name}</h3>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="bg-surface-container border border-surface-container-high text-secondary-container text-[11px] font-semibold px-2 py-0.5 rounded font-mono">
+          <span className="bg-surface-container border border-surface-container-high text-cite text-[11px] font-semibold px-2 py-0.5 rounded font-mono">
             {collection.count} doc{collection.count !== 1 ? 's' : ''}
           </span>
           <span className="text-[11px] text-on-surface-variant">
@@ -83,7 +83,7 @@ function CollectionCard({
       </div>
 
       {/* Footer */}
-      <div className="mt-auto pt-4 border-t border-[#303C5A]/50">
+      <div className="mt-auto pt-4 border-t border-rule/50">
         <button
           onClick={onSetActive}
           disabled={isActive}
@@ -149,9 +149,9 @@ export default function CollectionsPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="
-                w-full bg-[#1A2338] border border-[#303C5A] rounded-lg py-2 pl-10 pr-4
+                w-full bg-paper-deep border border-rule rounded-lg py-2 pl-10 pr-4
                 text-on-surface placeholder:text-on-surface-variant text-[14px]
-                focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all
+                focus:outline-none focus:border-cite focus:ring-1 focus:ring-cite transition-all
               "
             />
           </div>
@@ -167,7 +167,7 @@ export default function CollectionsPage() {
       )}
 
       {isError && (
-        <div className="flex flex-col items-center justify-center py-24 gap-4 text-[#ef4444]">
+        <div className="flex flex-col items-center justify-center py-24 gap-4 text-warn">
           <Icon name="error" size={40} filled />
           <p className="text-[14px]">Failed to load collections.</p>
           <button

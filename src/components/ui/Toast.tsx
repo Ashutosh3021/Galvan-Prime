@@ -41,26 +41,26 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             onOpenChange={open => { if (!open) remove(t.id); }}
             className={`
               relative flex items-start gap-3 w-80 rounded-lg shadow-xl
-              bg-[#1a2338] border border-[#252f4a]
+              bg-paper-deep border border-rule
               pl-4 pr-3 py-3
               data-[state=open]:animate-fade-in
               data-[state=closed]:opacity-0 data-[state=closed]:translate-x-4
               transition-all duration-200
               before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:rounded-l-lg
-              ${t.variant === 'success' ? 'before:bg-[#ff6600]' : 'before:bg-[#ef4444]'}
+              ${t.variant === 'success' ? 'before:bg-pass' : 'before:bg-warn'}
             `}
           >
             <Icon
               name={t.variant === 'success' ? 'check_circle' : 'error'}
               size={18}
-              className={`mt-0.5 flex-shrink-0 ${t.variant === 'success' ? 'text-[#ff6600]' : 'text-[#ef4444]'}`}
+              className={`mt-0.5 flex-shrink-0 ${t.variant === 'success' ? 'text-pass' : 'text-warn'}`}
               filled
             />
-            <RadixToast.Description className="flex-1 text-[13px] text-[#dee2f5] leading-relaxed">
+            <RadixToast.Description className="flex-1 text-[13px] text-ink leading-relaxed">
               {t.message}
             </RadixToast.Description>
-            <RadixToast.Close aria-label="Dismiss notification" className="text-[#e3bfb1] hover:text-white transition-colors p-0.5 -mt-0.5">
-              <Icon name="close" size={16} />
+            <RadixToast.Close aria-label="Dismiss notification" className="text-ink-soft hover:text-ink transition-colors p-0.5 -mt-0.5">
+              <Icon name="close" size={16} className="text-ink-soft hover:text-ink" />
             </RadixToast.Close>
           </RadixToast.Root>
         ))}

@@ -60,9 +60,9 @@ export function Select({
             position="popper"
             sideOffset={4}
             className="
-              z-50 bg-[#1a2338] border border-[#303443] rounded-lg shadow-xl
+              z-50 bg-paper-deep border border-rule rounded-lg shadow-card
               overflow-hidden w-[var(--radix-select-trigger-width)]
-              animate-scale-in
+              animate-fade-in
             "
           >
             <RadixSelect.Viewport className="p-1">

@@ -31,7 +31,7 @@ export default function MobileSettings() {
         {/* LLM Provider */}
         <section className="bg-surface-container border border-surface-container-high rounded-lg p-4">
           <h2 className="text-[20px] font-semibold text-on-surface mb-4 flex items-center gap-2">
-            <Icon name="psychology" size={20} className="text-secondary-container" />
+            <Icon name="psychology" size={20} className="text-cite" />
             LLM Provider
           </h2>
           <div className="space-y-4">
@@ -65,7 +65,7 @@ export default function MobileSettings() {
         {/* Vector Store */}
         <section className="bg-surface-container border border-surface-container-high rounded-lg p-4">
           <h2 className="text-[20px] font-semibold text-on-surface mb-4 flex items-center gap-2">
-            <Icon name="database" size={20} className="text-secondary-container" />
+            <Icon name="database" size={20} className="text-cite" />
             Vector Store
           </h2>
           <div className="space-y-4">
@@ -77,7 +77,7 @@ export default function MobileSettings() {
                   return (
                     <label key={db.id} className={`flex items-center justify-center gap-2 p-3 border rounded cursor-pointer transition-colors ${isSelected ? 'border-primary-container bg-primary-container/10 text-primary-container' : 'border-surface-container-high text-on-surface-variant hover:border-primary-container/50'}`}>
                       <input type="radio" name="vector_store" value={db.id} checked={isSelected} onChange={() => setField('vectorDB', db.id)} className="sr-only" />
-                      {db.isCloud && <Icon name="cloud" size={14} className="text-secondary-container" />}
+                      {db.isCloud && <Icon name="cloud" size={14} className="text-cite" />}
                       <span className="text-[14px]">{db.label}</span>
                     </label>
                   );
@@ -87,7 +87,7 @@ export default function MobileSettings() {
             <div className="flex flex-col gap-2">
               <label className="text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant uppercase">Environment</label>
               <input type="text" value={form.envRegion} onChange={e => setField('envRegion', e.target.value)}
-                className="w-full bg-surface-container-lowest border border-surface-container-high rounded font-mono text-[13px] text-secondary py-2 px-3 focus:outline-none focus:border-primary-container" />
+                className="w-full bg-surface-container-lowest border border-surface-container-high rounded font-mono text-[13px] text-cite py-2 px-3 focus:outline-none focus:border-primary-container" />
             </div>
           </div>
         </section>
@@ -95,7 +95,7 @@ export default function MobileSettings() {
         {/* Search Config */}
         <section className="bg-surface-container border border-surface-container-high rounded-lg p-4">
           <h2 className="text-[20px] font-semibold text-on-surface mb-4 flex items-center gap-2">
-            <Icon name="tune" size={20} className="text-secondary-container" />
+            <Icon name="tune" size={20} className="text-cite" />
             Search Configuration
           </h2>
           <div className="flex flex-col gap-4">
@@ -115,7 +115,7 @@ export default function MobileSettings() {
         {/* Connection Status */}
         <section className="bg-surface-container border border-surface-container-high rounded-lg p-4">
           <h2 className="text-[20px] font-semibold text-on-surface mb-4 flex items-center gap-2">
-            <Icon name="power" size={20} className="text-secondary-container" />
+            <Icon name="power" size={20} className="text-cite" />
             Connection Status
           </h2>
           <ul className="space-y-2">
@@ -126,7 +126,7 @@ export default function MobileSettings() {
                   name={ev.loaded ? 'check_circle' : 'error'}
                   size={18}
                   filled
-                  className={ev.loaded ? 'text-[#4ae176]' : 'text-[#ef4444]'}
+                  className={ev.loaded ? 'text-pass' : 'text-warn'}
                 />
               </li>
             ))}
@@ -134,10 +134,10 @@ export default function MobileSettings() {
         </section>
 
         {error && (
-          <p className="text-[13px] text-[#ef4444] w-full">⚠ {error}</p>
+          <p className="text-[13px] text-warn w-full">⚠ {error}</p>
         )}
         <div className="flex flex-col sm:flex-row-reverse items-center gap-4 pt-2">
-          <button type="submit" className="w-full sm:w-auto bg-primary-container hover:brightness-110 text-on-primary text-[16px] font-semibold py-3 px-8 rounded-lg transition-all shadow-lg shadow-primary-container/20">
+          <button type="submit" className="w-full sm:w-auto bg-ink hover:opacity-90 text-paper text-[16px] font-semibold py-3 px-8 rounded-lg transition-all shadow-card">
             {saved ? '✓ Saved!' : 'Save Changes'}
           </button>
           <button type="button" onClick={handleReset} className="text-[14px] text-on-surface-variant hover:text-on-surface transition-colors underline underline-offset-4">

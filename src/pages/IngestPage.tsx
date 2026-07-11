@@ -127,11 +127,11 @@ export default function IngestPage() {
                       aria-invalid={urlError ? 'true' : 'false'}
                       aria-describedby={urlError ? 'url-error' : undefined}
                       className={`w-full bg-surface-container-lowest border rounded px-3 py-2.5 text-[14px] text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-1 transition-colors disabled:opacity-50 ${
-                        urlError ? 'border-[#ef4444] focus:border-[#ef4444] focus:ring-[#ef4444]' : 'border-surface-container-high focus:border-primary-container focus:ring-primary-container'
+                        urlError ? 'border-warn focus:border-warn focus:ring-warn' : 'border-surface-container-high focus:border-primary-container focus:ring-primary-container'
                       }`}
                     />
                     {urlError && (
-                      <p id="url-error" role="alert" className="text-[12px] text-[#ef4444] flex items-center gap-1">
+                      <p id="url-error" role="alert" className="text-[12px] text-warn flex items-center gap-1">
                         <Icon name="error" size={13} />
                         {urlError}
                       </p>

@@ -75,7 +75,7 @@ export default function DesktopSettings() {
                 <label className="text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant">API Key</label>
                 <div className="relative">
                   <input type={showKey ? 'text' : 'password'} value={form.apiKey} onChange={e => setField('apiKey', e.target.value)}
-                    className="w-full bg-[#05070A] border border-surface-container-highest rounded px-4 py-3 font-mono text-[14px] text-secondary focus:outline-none focus:border-primary-container transition-colors" />
+                    className="w-full bg-paper border border-surface-container-highest rounded px-4 py-3 font-mono text-[14px] text-cite focus:outline-none focus:border-primary-container transition-colors" />
                   <button type="button" onClick={toggleShowKey} className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface">
                     <Icon name={showKey ? 'visibility' : 'visibility_off'} size={20} />
                   </button>
@@ -85,10 +85,10 @@ export default function DesktopSettings() {
 
             {/* Vector Store */}
             <div className="bg-surface-container rounded-lg border border-surface-container-high p-6 flex flex-col gap-6 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-secondary-container" />
+              <div className="absolute top-0 left-0 w-1 h-full bg-cite" />
               <div>
                 <h2 className="text-[20px] font-semibold text-on-surface flex items-center gap-2">
-                  <Icon name="database" size={20} className="text-secondary-container" />
+                  <Icon name="database" size={20} className="text-cite" />
                   Vector Database
                 </h2>
                 <p className="text-[14px] text-on-surface-variant mt-1">Configure the storage backend for document embeddings.</p>
@@ -97,12 +97,12 @@ export default function DesktopSettings() {
                 {[{ id: 'chroma', name: 'ChromaDB', badge: 'Local' }, { id: 'pinecone', name: 'Pinecone', badge: 'Cloud' }].map(db => {
                   const isSelected = form.vectorDB === db.id;
                   return (
-                    <label key={db.id} className={`cursor-pointer relative rounded-lg border p-4 flex flex-col gap-2 transition-all ${isSelected ? 'border-secondary-container bg-secondary-container/5' : 'border-surface-container-highest bg-surface hover:bg-surface-variant/50'}`}>
+                    <label key={db.id} className={`cursor-pointer relative rounded-lg border p-4 flex flex-col gap-2 transition-all ${isSelected ? 'border-secondary-container bg-cite/5' : 'border-surface-container-highest bg-surface hover:bg-surface-variant/50'}`}>
                       <div className="flex items-center justify-between">
                         <span className="text-[16px] font-bold text-on-surface">{db.name}</span>
-                        <span className={`text-[12px] font-semibold ${isSelected ? 'bg-secondary-container/20 text-secondary-container' : 'bg-surface-container-lowest text-on-surface-variant'} px-2 py-1 rounded`}>{db.badge}</span>
+                        <span className={`text-[12px] font-semibold ${isSelected ? 'bg-cite/20 text-cite' : 'bg-surface-container-lowest text-on-surface-variant'} px-2 py-1 rounded`}>{db.badge}</span>
                         <input type="radio" name="vector_db" value={db.id} checked={isSelected} onChange={() => setField('vectorDB', db.id)} className="sr-only" />
-                        <Icon name={isSelected ? 'radio_button_checked' : 'radio_button_unchecked'} size={18} filled={isSelected} className={isSelected ? 'text-secondary-container' : 'text-on-surface-variant'} />
+                        <Icon name={isSelected ? 'radio_button_checked' : 'radio_button_unchecked'} size={18} filled={isSelected} className={isSelected ? 'text-cite' : 'text-on-surface-variant'} />
                       </div>
                     </label>
                   );
@@ -111,11 +111,11 @@ export default function DesktopSettings() {
               <div className="flex flex-col gap-4 bg-surface p-4 rounded border border-surface-container-highest">
                 <div className="flex flex-col gap-2">
                   <label className="text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant">Environment Region</label>
-                  <input type="text" value={form.envRegion} onChange={e => setField('envRegion', e.target.value)} className="w-full bg-[#05070A] border border-surface-container-highest rounded px-4 py-2 font-mono text-[14px] text-on-surface focus:outline-none focus:border-secondary transition-colors" />
+                  <input type="text" value={form.envRegion} onChange={e => setField('envRegion', e.target.value)} className="w-full bg-paper border border-surface-container-highest rounded px-4 py-2 font-mono text-[14px] text-on-surface focus:outline-none focus:border-cite transition-colors" />
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-[12px] font-semibold tracking-[0.05em] text-on-surface-variant">Index Name</label>
-                  <input type="text" value={form.indexName} onChange={e => setField('indexName', e.target.value)} className="w-full bg-[#05070A] border border-surface-container-highest rounded px-4 py-2 font-mono text-[14px] text-on-surface focus:outline-none focus:border-secondary transition-colors" />
+                  <input type="text" value={form.indexName} onChange={e => setField('indexName', e.target.value)} className="w-full bg-paper border border-surface-container-highest rounded px-4 py-2 font-mono text-[14px] text-on-surface focus:outline-none focus:border-cite transition-colors" />
                 </div>
               </div>
             </div>
@@ -131,7 +131,7 @@ export default function DesktopSettings() {
               </div>
               <div className="flex flex-col gap-8 mt-4">
                 <div className="flex items-center justify-between text-[14px]">
-                  <span className="text-secondary-container font-bold">Dense Vector (Semantic)</span>
+                  <span className="text-cite font-bold">Dense Vector (Semantic)</span>
                   <span className="text-primary-container font-bold">Sparse BM25 (Keyword)</span>
                 </div>
                 <div className="relative w-full">
@@ -144,13 +144,13 @@ export default function DesktopSettings() {
             </div>
 
             {error && (
-              <p className="text-[12px] text-[#ef4444] mt-2">⚠ {error}</p>
+              <p className="text-[12px] text-warn mt-2">⚠ {error}</p>
             )}
             <div className="flex items-center justify-end gap-6 mt-4">
               <button type="button" onClick={handleReset} className="text-on-surface-variant hover:text-on-surface transition-colors text-[12px] font-semibold tracking-[0.05em]">
                 Reset to defaults
               </button>
-              <button type="submit" className="bg-primary-container hover:brightness-110 text-white px-8 py-3 rounded text-[12px] font-semibold tracking-[0.05em] shadow-lg shadow-primary-container/20 transition-all flex items-center gap-2">
+              <button type="submit" className="bg-ink hover:opacity-90 text-paper px-8 py-3 rounded text-[12px] font-semibold tracking-[0.05em] shadow-card transition-all flex items-center gap-2">
                 <Icon name="save" size={16} />
                 {saved ? '✓ Saved!' : 'Save Changes'}
               </button>
@@ -166,12 +166,12 @@ export default function DesktopSettings() {
               </h3>
               <ul className="flex flex-col gap-4">
                 {serviceItems.map(ev => (
-                  <li key={ev.key} className={`flex items-center justify-between p-3 rounded bg-[#05070A] border ${ev.loaded ? 'border-surface-container-highest' : 'border-[#ef4444]/30 border-dashed'}`}>
+                  <li key={ev.key} className={`flex items-center justify-between p-3 rounded bg-paper border ${ev.loaded ? 'border-surface-container-highest' : 'border-warn/30 border-dashed'}`}>
                     <div className="flex items-center gap-3">
-                      <Icon name={ev.loaded ? 'check_circle' : 'error'} size={18} filled className={ev.loaded ? 'text-secondary-container' : 'text-[#ef4444]'} />
+                      <Icon name={ev.loaded ? 'check_circle' : 'error'} size={18} filled className={ev.loaded ? 'text-pass' : 'text-warn'} />
                       <span className="font-mono text-[14px] text-on-surface">{ev.key}</span>
                     </div>
-                    <span className={`text-[12px] font-semibold tracking-[0.05em] ${ev.loaded ? 'text-secondary-container bg-secondary-container/10' : 'text-[#ef4444] bg-[#ef4444]/10'} px-2 py-1 rounded`}>
+                    <span className={`text-[12px] font-semibold tracking-[0.05em] ${ev.loaded ? 'text-pass bg-pass/10' : 'text-warn bg-warn/10'} px-2 py-1 rounded`}>
                       {ev.loaded ? 'Healthy' : 'Unavailable'}
                     </span>
                   </li>

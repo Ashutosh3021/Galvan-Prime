@@ -31,7 +31,7 @@ export default function MobileBottomNav() {
             className={`
               flex-1 flex flex-col items-center justify-center py-2 gap-0.5
               transition-colors active:scale-90 duration-200
-              ${isActive ? 'text-primary-container' : 'text-on-surface-variant hover:text-primary-container hover:bg-white/5'}
+              ${isActive ? 'text-primary-container' : 'text-on-surface-variant hover:text-primary-container hover:bg-ink/5'}
             `}
           >
             <Icon name={item.icon} size={22} filled={isActive} />

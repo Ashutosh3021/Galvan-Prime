@@ -31,8 +31,8 @@ export function ConfirmDialog({
         <Dialog.Content
           className="
             fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50
-            bg-[#1a2338] border border-[#303443] rounded-xl shadow-2xl
-            w-[90vw] max-w-md p-6 flex flex-col gap-5 animate-scale-in
+            bg-paper-deep border border-rule rounded-xl shadow-card
+            w-[90vw] max-w-md p-6 flex flex-col gap-5
           "
         >
           <div className="flex items-start gap-3">
@@ -40,7 +40,7 @@ export function ConfirmDialog({
               name={destructive ? 'warning' : 'info'}
               size={22}
               filled
-              className={`mt-0.5 flex-shrink-0 ${destructive ? 'text-[#ef4444]' : 'text-[#ff6600]'}`}
+              className={`mt-0.5 flex-shrink-0 ${destructive ? 'text-warn' : 'text-cite'}`}
             />
             <div>
               <Dialog.Title className="text-[18px] font-semibold text-on-surface">{title}</Dialog.Title>
@@ -58,7 +58,7 @@ export function ConfirmDialog({
             </Dialog.Close>
             <button
               onClick={() => { onConfirm(); onOpenChange(false); }}
-              className={`px-4 py-2 rounded-lg text-[14px] font-semibold text-white transition-all hover:brightness-110 active:scale-95 ${destructive ? 'bg-[#ef4444]' : 'bg-primary-container'}`}
+              className={`px-4 py-2 rounded-lg text-[14px] font-semibold text-paper transition-all hover:opacity-90 active:scale-95 ${destructive ? 'bg-warn' : 'bg-ink'}`}
             >
               {confirmLabel}
             </button>
