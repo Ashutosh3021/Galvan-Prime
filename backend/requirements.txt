@@ -17,7 +17,8 @@ pypdf==4.2.0              # PDF text extraction
 beautifulsoup4==4.12.3    # HTML/URL scraping
 requests>=2.32.2,<3       # sync HTTP for URL loader
 langchain-text-splitters==0.2.0  # RecursiveCharacterTextSplitter
-sentence-transformers==2.7.0     # all-MiniLM-L6-v2 embeddings
+sentence-transformers==2.7.0     # all-MiniLM-L6-v2 embeddings (PAID tier)
+fastembed==0.8.0                 # ONNX embeddings (FREE tier — no torch)
 chromadb==0.5.0                  # local vector store
 aiofiles==23.2.1                 # async file I/O for uploads
 
