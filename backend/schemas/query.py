@@ -16,6 +16,16 @@ class QueryIn(BaseModel):
     session_id: str = Field(
         min_length=1, max_length=64, description="UUID; frontend generates on new chat"
     )
+    provider: Literal["gemini", "openai", "groq", "openrouter"] | None = Field(
+        None,
+        description="LLM provider for this query; omit to use the deployment default",
+    )
+
+
+class ProvidersOut(BaseModel):
+    default: str | None
+    available: list[str]
+    models: dict[str, str]
 
 
 class Citation(BaseModel):

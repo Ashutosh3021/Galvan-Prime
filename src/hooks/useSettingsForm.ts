@@ -1,4 +1,5 @@
-import { useState, useCallback, type FormEvent } from 'react';
+import { useState, useCallback, useEffect, type FormEvent } from 'react';
+import { getSettings, updateSettings } from '../api/settings';
 import type { SettingsFormState } from '../types';
 
 const STORAGE_KEY = 'galvanrag:settings';
@@ -12,28 +13,26 @@ const DEFAULT_SETTINGS: SettingsFormState = {
   hybridWeight: 70,
 };
 
-/** Read persisted settings from localStorage, falling back to defaults */
-function loadSettings(): SettingsFormState {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_SETTINGS;
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } as SettingsFormState;
-  } catch {
-    return DEFAULT_SETTINGS;
-  }
-}
-
 /**
  * useSettingsForm
  *
  * Shared settings form logic for DesktopSettings and MobileSettings.
- * Persists preferred LLM backend, default chunk strategy, and default
- * collection to localStorage on save.
+ * Loads the active LLM provider from the backend on mount and persists
+ * provider changes via POST /settings. Non-backend fields (API key, vector
+ * DB, region, index, hybrid weight) remain localStorage-only for UI continuity.
  */
 export function useSettingsForm() {
-  const [form, setForm] = useState<SettingsFormState>(loadSettings);
+  const [form, setForm] = useState<SettingsFormState>(DEFAULT_SETTINGS);
   const [showKey, setShowKey] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load the backend's active LLM provider on mount.
+  useEffect(() => {
+    getSettings()
+      .then(s => setForm(prev => ({ ...prev, llmProvider: s.llm_provider })))
+      .catch(() => { /* backend unreachable — keep defaults/localStorage */ });
+  }, []);
 
   const setField = useCallback(
     <K extends keyof SettingsFormState>(key: K, value: SettingsFormState[K]) => {
@@ -47,23 +46,31 @@ export function useSettingsForm() {
   }, []);
 
   const handleSave = useCallback(
-    (e: FormEvent) => {
+    async (e: FormEvent) => {
       e.preventDefault();
+      setError(null);
       try {
-        // Persist only the non-sensitive fields — never write the raw API key
-        const toSave: Partial<SettingsFormState> = {
-          llmProvider: form.llmProvider,
-          vectorDB: form.vectorDB,
-          envRegion: form.envRegion,
-          indexName: form.indexName,
-          hybridWeight: form.hybridWeight,
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-      } catch {
-        // localStorage may be unavailable (e.g. private browsing quota)
+        await updateSettings({ llm_provider: form.llmProvider });
+        // Persist non-backend fields to localStorage for UI continuity.
+        try {
+          localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({
+              llmProvider: form.llmProvider,
+              vectorDB: form.vectorDB,
+              envRegion: form.envRegion,
+              indexName: form.indexName,
+              hybridWeight: form.hybridWeight,
+            }),
+          );
+        } catch {
+          // localStorage may be unavailable (e.g. private browsing)
+        }
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to save settings');
       }
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
     },
     [form],
   );
@@ -77,5 +84,5 @@ export function useSettingsForm() {
     }
   }, []);
 
-  return { form, showKey, saved, setField, toggleShowKey, handleSave, handleReset };
+  return { form, showKey, saved, error, setField, toggleShowKey, handleSave, handleReset };
 }

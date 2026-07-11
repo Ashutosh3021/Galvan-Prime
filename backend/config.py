@@ -20,8 +20,26 @@ class Settings(BaseSettings):
     app_tier: str = "paid"
 
     # ── LLM ──────────────────────────────────────────────────
+    # Active provider is chosen by LLM_PROVIDER (gemini|openai|groq|openrouter);
+    # if blank, the first API key present wins (gemini>openai>openrouter>groq).
     gemini_api_key: str = ""
     openai_api_key: str = ""
+    groq_api_key: str = ""
+    openrouter_api_key: str = ""
+    llm_provider: str = ""
+    gemini_model: str = "gemini-2.5-flash"       # override: GEMINI_MODEL
+    openai_model: str = "gpt-4o-mini"            # override: OPENAI_MODEL
+    groq_model: str = "llama-3.3-70b-versatile"  # override: GROQ_MODEL
+    openrouter_model: str = "openai/gpt-4o-mini" # override: OPENROUTER_MODEL
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+
+    # ── UI-configurable settings (runtime-overridable) ───────
+    # Fallbacks for values the Settings page can change at runtime. The live
+    # values come from the in-memory override store set via POST /settings
+    # (reset on restart).
+    chunk_strategy: str = "fixed"
+    default_collection: str | None = None
+    eval_auto_run: bool = False
 
     # ── Vector Stores ────────────────────────────────────────
     pinecone_api_key: str = ""
@@ -54,3 +72,22 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Return a cached Settings instance (singleton)."""
     return Settings()
+
+
+# ── Runtime setting overrides ─────────────────────────────────────────────────
+# In-memory overrides applied via POST /settings. These take precedence over the
+# env-derived values above and reset when the process restarts.
+
+_runtime_overrides: dict = {}
+
+
+def get_runtime_setting(key: str, default=None):
+    """Return a runtime override, or *default* if it was never set."""
+    return _runtime_overrides.get(key, default)
+
+
+def set_runtime_settings(values: dict) -> None:
+    """Persist runtime overrides (only non-None values are stored)."""
+    for key, value in values.items():
+        if value is not None:
+            _runtime_overrides[key] = value

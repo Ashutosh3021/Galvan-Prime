@@ -118,6 +118,7 @@ async def run_rag_chain(
     collection: str,
     session_id: str,
     top_k: int = 5,
+    provider: str | None = None,
 ) -> RAGResult:
     """
     Execute the full RAG pipeline for a single user question.
@@ -161,7 +162,7 @@ async def run_rag_chain(
     messages = _build_messages(history, question, context_block)
 
     # ── 4. Invoke LLM (thread pool — LangChain is synchronous) ────────────────
-    llm = get_llm()
+    llm = get_llm(provider=provider)
     parser = StrOutputParser()
 
     def _invoke_llm() -> str:

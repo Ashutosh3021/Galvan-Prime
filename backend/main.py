@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from api.middleware.cors import add_cors
-from api.routes import eval, ingest, query, status
+from api.routes import eval, ingest, query, settings, status
 from config import get_settings
 
 settings_obj = get_settings()
@@ -50,6 +50,7 @@ app.include_router(ingest.router)
 app.include_router(query.router)
 app.include_router(eval.router)
 app.include_router(status.router)
+app.include_router(settings.router)
 
 
 # ── Root health probe ─────────────────────────────────────────────────────────

@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { useChat } from '../../hooks/useQuery';
 import { useCollections } from '../../hooks/useIngest';
 import { useAppState } from '../../store/useAppStore';
-import type { QueryCitation } from '../../types';
+import { PROVIDER_LABELS, type QueryCitation } from '../../types';
 
 function CitationChips({ citations }: { citations: QueryCitation[] }) {
   return (
@@ -38,8 +38,14 @@ export default function MobileQuery() {
   const [collection, setCollection] = useState(activeCollection);
   const collections = useCollections();
 
-  const { messages, sessionId, isLoading, error, sendMessage, clearSession } = useChat({ collection });
+  const { messages, sessionId, isLoading, error, sendMessage, clearSession, providers } = useChat({ collection });
   const [inputValue, setInputValue] = useState('');
+  const [provider, setProvider] = useState('');
+  useEffect(() => {
+    if (providers && !provider) {
+      setProvider(providers.default ?? providers.available[0] ?? '');
+    }
+  }, [providers, provider]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -48,7 +54,7 @@ export default function MobileQuery() {
 
   function handleSubmit() {
     if (!inputValue.trim() || isLoading) return;
-    void sendMessage(inputValue.trim());
+    void sendMessage(inputValue.trim(), provider);
     setInputValue('');
   }
 
@@ -85,6 +91,18 @@ export default function MobileQuery() {
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
+          {providers && providers.available.length > 0 && (
+            <select
+              value={provider}
+              onChange={e => setProvider(e.target.value)}
+              aria-label="LLM provider"
+              className="bg-[#001a40] border border-[#5a4136] rounded px-2 py-1 text-[#e3bfb1] text-[12px] font-semibold focus:outline-none focus:border-[#ff6600]"
+            >
+              {providers.available.map(p => (
+                <option key={p} value={p}>{PROVIDER_LABELS[p] ?? p}</option>
+              ))}
+            </select>
+          )}
         </div>
       </header>
 

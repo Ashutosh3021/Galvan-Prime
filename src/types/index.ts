@@ -39,6 +39,7 @@ export interface QueryRequest {
   question: string;
   collection: string;
   session_id: string;
+  provider?: string;
 }
 
 export interface QueryCitation {
@@ -52,6 +53,20 @@ export interface QueryResponse {
   citations: QueryCitation[];
   session_id: string;
 }
+
+export interface ProvidersResponse {
+  default: string | null;
+  available: string[];
+  models: Record<string, string>;
+}
+
+/** Display labels for provider ids returned by GET /query/providers */
+export const PROVIDER_LABELS: Record<string, string> = {
+  gemini: 'Gemini',
+  openai: 'OpenAI',
+  groq: 'Groq',
+  openrouter: 'OpenRouter',
+};
 
 // ─── API — Eval ───────────────────────────────────────────────────────────────
 
@@ -91,6 +106,22 @@ export interface PersistedSettings {
   llmProvider: string;
   defaultChunkStrategy: 'fixed' | 'semantic';
   defaultCollection: string;
+}
+
+/** Effective settings returned by GET /settings (snake_case to match the API) */
+export interface SettingsResponse {
+  llm_provider: string;
+  chunk_strategy: 'fixed' | 'semantic';
+  default_collection: string | null;
+  eval_auto_run: boolean;
+}
+
+/** Fields the Settings page can update at runtime (snake_case to match the API) */
+export interface SettingsUpdateRequest {
+  llm_provider?: string;
+  chunk_strategy?: 'fixed' | 'semantic';
+  default_collection?: string | null;
+  eval_auto_run?: boolean;
 }
 
 // ─── UI — Chat ────────────────────────────────────────────────────────────────

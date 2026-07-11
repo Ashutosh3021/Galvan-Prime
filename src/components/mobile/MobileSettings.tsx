@@ -1,10 +1,17 @@
+import { useEffect, useState } from 'react';
 import { useSettingsForm } from '../../hooks/useSettingsForm';
 import { Icon } from '../ui/Icon';
 import { useStatus } from '../../hooks/useStatus';
+import { getProviders } from '../../api/query';
+import { PROVIDER_LABELS, type ProvidersResponse } from '../../types';
 
 export default function MobileSettings() {
-  const { form, showKey, saved, setField, toggleShowKey, handleSave, handleReset } = useSettingsForm();
+  const { form, showKey, saved, error, setField, toggleShowKey, handleSave, handleReset } = useSettingsForm();
   const { data: statusData } = useStatus();
+  const [providers, setProviders] = useState<ProvidersResponse | null>(null);
+  useEffect(() => {
+    getProviders().then(setProviders).catch(() => {});
+  }, []);
 
   const services = statusData?.services ?? [];
   const serviceItems = [
@@ -33,10 +40,9 @@ export default function MobileSettings() {
               <div className="relative">
                 <select value={form.llmProvider} onChange={e => setField('llmProvider', e.target.value)}
                   className="w-full bg-surface-container-lowest border border-surface-container-high rounded text-[14px] text-on-surface py-2 px-3 appearance-none focus:outline-none focus:border-primary-container">
-                  <option value="gemini-flash">Gemini 1.5 Flash</option>
-                  <option value="gemini-pro">Gemini 1.5 Pro</option>
-                  <option value="gpt4o">GPT-4o</option>
-                  <option value="claude-35">Claude 3.5 Sonnet</option>
+                  {(providers?.available ?? ['gemini', 'openai']).map(p => (
+                    <option key={p} value={p}>{PROVIDER_LABELS[p] ?? p}</option>
+                  ))}
                 </select>
                 <span className="absolute right-3 top-2.5 text-on-surface-variant pointer-events-none">
                   <Icon name="expand_more" size={18} />
@@ -127,6 +133,9 @@ export default function MobileSettings() {
           </ul>
         </section>
 
+        {error && (
+          <p className="text-[13px] text-[#ef4444] w-full">⚠ {error}</p>
+        )}
         <div className="flex flex-col sm:flex-row-reverse items-center gap-4 pt-2">
           <button type="submit" className="w-full sm:w-auto bg-primary-container hover:brightness-110 text-on-primary text-[16px] font-semibold py-3 px-8 rounded-lg transition-all shadow-lg shadow-primary-container/20">
             {saved ? '✓ Saved!' : 'Save Changes'}

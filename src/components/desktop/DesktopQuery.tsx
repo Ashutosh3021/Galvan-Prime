@@ -5,7 +5,7 @@ import { Icon } from '../ui/Icon';
 import { useChat } from '../../hooks/useQuery';
 import { useCollections } from '../../hooks/useIngest';
 import { useAppState } from '../../store/useAppStore';
-import type { QuerySession } from '../../types';
+import { PROVIDER_LABELS, type QuerySession, type ProvidersResponse } from '../../types';
 
 function SessionSidebar({ sessions, activeId, onSelect, onNew }: {
   sessions: QuerySession[];
@@ -56,13 +56,16 @@ function SessionSidebar({ sessions, activeId, onSelect, onNew }: {
   );
 }
 
-function InputArea({ onSend, isLoading, collection, onCollectionChange, collections, sessionId }: {
+function InputArea({ onSend, isLoading, collection, onCollectionChange, collections, sessionId, provider, onProviderChange, providers }: {
   onSend: (q: string) => void;
   isLoading: boolean;
   collection: string;
   onCollectionChange: (c: string) => void;
   collections: string[];
   sessionId: string;
+  provider: string;
+  onProviderChange: (v: string) => void;
+  providers: ProvidersResponse | null;
 }) {
   const [value, setValue] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -89,6 +92,16 @@ function InputArea({ onSend, isLoading, collection, onCollectionChange, collecti
           <div className="w-48">
             <Select value={collection} onValueChange={onCollectionChange} options={collections.map(c => ({ value: c, label: c }))} placeholder="Select collection…" />
           </div>
+          {providers && providers.available.length > 0 && (
+            <div className="w-40">
+              <Select
+                value={provider}
+                onValueChange={onProviderChange}
+                options={providers.available.map(p => ({ value: p, label: PROVIDER_LABELS[p] ?? p }))}
+                placeholder="Provider…"
+              />
+            </div>
+          )}
           <span className="text-[11px] font-mono text-on-surface-variant/50 ml-auto truncate">session: {sessionId.slice(0, 8)}…</span>
         </div>
 
@@ -139,7 +152,13 @@ export default function DesktopQuery() {
   const { activeCollection } = useAppState();
   const [collection, setCollection] = useState(activeCollection);
   const collections = useCollections();
-  const { messages, sessionId, isLoading, error, sendMessage, clearSession } = useChat({ collection });
+  const { messages, sessionId, isLoading, error, sendMessage, clearSession, providers } = useChat({ collection });
+  const [provider, setProvider] = useState('');
+  useEffect(() => {
+    if (providers && !provider) {
+      setProvider(providers.default ?? providers.available[0] ?? '');
+    }
+  }, [providers, provider]);
 
   const [sessions, setSessions] = useState<QuerySession[]>([
     { id: sessionId, label: sessionId.slice(0, 12), isActive: true },
@@ -185,12 +204,15 @@ export default function DesktopQuery() {
         <ChatWindow messages={messages} isLoading={isLoading} error={error} />
 
         <InputArea
-          onSend={q => void sendMessage(q)}
+          onSend={q => void sendMessage(q, provider)}
           isLoading={isLoading}
           collection={collection}
           onCollectionChange={setCollection}
           collections={collections}
           sessionId={sessionId}
+          provider={provider}
+          onProviderChange={setProvider}
+          providers={providers}
         />
       </main>
     </div>

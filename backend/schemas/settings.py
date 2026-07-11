@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 
 class SettingsOut(BaseModel):
-    llm_provider: Literal["gemini", "openai"]
+    llm_provider: Literal["gemini", "openai", "groq", "openrouter"]
     chunk_strategy: Literal["fixed", "semantic"]
     default_collection: str | None
     eval_auto_run: bool
@@ -17,7 +17,7 @@ class SettingsOut(BaseModel):
 
 
 class SettingsUpdateIn(BaseModel):
-    llm_provider: Literal["gemini", "openai"] | None = None
+    llm_provider: Literal["gemini", "openai", "groq", "openrouter"] | None = None
     chunk_strategy: Literal["fixed", "semantic"] | None = None
     default_collection: str | None = None
     eval_auto_run: bool | None = None

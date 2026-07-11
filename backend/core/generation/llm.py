@@ -1,13 +1,13 @@
 """
 core/generation/llm.py — Pluggable LLM backend.
 
-Selects between Gemini (default) and OpenAI based on config.
+Selects an LLM provider (gemini | openai | groq | openrouter) from config.
 Returns a LangChain BaseChatModel so the rest of the chain is
 provider-agnostic — swapping providers is a single config change.
 
 Usage:
     from core.generation.llm import get_llm
-    llm = get_llm()          # returns cached ChatGoogleGenerativeAI or ChatOpenAI
+    llm = get_llm()          # returns a cached chat model for the active provider
     response = llm.invoke("Hello")
 """
 
@@ -21,15 +21,44 @@ from langchain_core.language_models import BaseChatModel
 from langchain_google_genai import ChatGoogleGenerativeAI  # type: ignore
 from langchain_openai import ChatOpenAI  # type: ignore
 
-from config import get_settings
+from config import Settings, get_runtime_setting, get_settings
 
 logger = logging.getLogger(__name__)
 
-LLMProvider = Literal["gemini", "openai"]
+LLMProvider = Literal["gemini", "openai", "groq", "openrouter"]
 
-# Models used per provider — easy to override via config in the future
-_GEMINI_MODEL = "gemini-1.5-flash"
-_OPENAI_MODEL = "gpt-4o-mini"
+# In-code fallback defaults. Config supplies the real values; these cover the
+# case where an env var is left empty. Override any via its *_MODEL env var.
+_GEMINI_MODEL = "gemini-2.5-flash"        # override: GEMINI_MODEL
+_OPENAI_MODEL = "gpt-4o-mini"             # override: OPENAI_MODEL
+_GROQ_MODEL = "llama-3.3-70b-versatile"   # override: GROQ_MODEL
+_OPENROUTER_MODEL = "openai/gpt-4o-mini"  # override: OPENROUTER_MODEL
+_OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+
+
+def _resolve_provider(settings: Settings, explicit: LLMProvider | None) -> str:
+    """Pick which LLM provider to use.
+
+    Resolution order:
+      1. *provider* argument (explicit override — used by tests).
+      2. LLM_PROVIDER env var (e.g. "groq").
+      3. first API key present (gemini > openai > openrouter > groq).
+    Raises RuntimeError if nothing is configured.
+    """
+    if explicit:
+        return explicit
+    rt = get_runtime_setting("llm_provider")
+    if rt:
+        return rt
+    if settings.llm_provider:
+        return settings.llm_provider
+    for name in ("gemini", "openai", "openrouter", "groq"):
+        if getattr(settings, f"{name}_api_key", ""):
+            return name
+    raise RuntimeError(
+        "No LLM API key configured. Set GEMINI_API_KEY, OPENAI_API_KEY, "
+        "GROQ_API_KEY, or OPENROUTER_API_KEY in your environment."
+    )
 
 
 @lru_cache(maxsize=1)
@@ -37,57 +66,76 @@ def get_llm(provider: LLMProvider | None = None) -> BaseChatModel:
     """
     Return a cached LangChain chat model for the configured provider.
 
-    Provider resolution order:
-      1. *provider* argument (explicit override — used by tests).
-      2. Settings.gemini_api_key present → Gemini.
-      3. Settings.openai_api_key present → OpenAI.
-      4. No key configured → raises RuntimeError.
+    Provider resolution: see _resolve_provider. The selected provider's API
+    key must be set, or a clear RuntimeError is raised.
 
     Args:
-        provider: Optional explicit provider name ('gemini' or 'openai').
+        provider: Optional explicit provider name (gemini/openai/groq/openrouter).
 
     Returns:
         Configured BaseChatModel instance.
 
     Raises:
-        RuntimeError: If no API key is available for the requested provider.
-        ImportError:  If the required LangChain integration package is missing.
+        RuntimeError: If no API key is available for the resolved provider.
+        ImportError:  If the required LangChain integration package is missing
+                      (only Groq needs an extra dep: langchain-groq).
     """
     settings = get_settings()
-
-    resolved: LLMProvider
-    if provider is not None:
-        resolved = provider
-    elif settings.gemini_api_key:
-        resolved = "gemini"
-    elif settings.openai_api_key:
-        resolved = "openai"
-    else:
-        raise RuntimeError(
-            "No LLM API key configured. Set GEMINI_API_KEY or OPENAI_API_KEY in .env"
-        )
+    resolved = _resolve_provider(settings, provider)
 
     if resolved == "gemini":
         if not settings.gemini_api_key:
             raise RuntimeError("GEMINI_API_KEY is not set")
-        logger.info("LLM: using Gemini model '%s'", _GEMINI_MODEL)
+        model = settings.gemini_model or _GEMINI_MODEL
+        logger.info("LLM: using Gemini model '%s'", model)
         return ChatGoogleGenerativeAI(
-            model=_GEMINI_MODEL,
+            model=model,
             google_api_key=settings.gemini_api_key,
             temperature=0.2,
             max_retries=3,
         )
 
-    # OpenAI
-    if not settings.openai_api_key:
-        raise RuntimeError("OPENAI_API_KEY is not set")
-    logger.info("LLM: using OpenAI model '%s'", _OPENAI_MODEL)
-    return ChatOpenAI(
-        model=_OPENAI_MODEL,
-        openai_api_key=settings.openai_api_key,
-        temperature=0.2,
-        max_retries=3,
-    )
+    if resolved == "openai":
+        if not settings.openai_api_key:
+            raise RuntimeError("OPENAI_API_KEY is not set")
+        model = settings.openai_model or _OPENAI_MODEL
+        logger.info("LLM: using OpenAI model '%s'", model)
+        return ChatOpenAI(
+            model=model,
+            openai_api_key=settings.openai_api_key,
+            temperature=0.2,
+            max_retries=3,
+        )
+
+    if resolved == "openrouter":
+        if not settings.openrouter_api_key:
+            raise RuntimeError("OPENROUTER_API_KEY is not set")
+        model = settings.openrouter_model or _OPENROUTER_MODEL
+        logger.info("LLM: using OpenRouter model '%s'", model)
+        return ChatOpenAI(
+            model=model,
+            openai_api_key=settings.openrouter_api_key,
+            base_url=settings.openrouter_base_url or _OPENROUTER_BASE_URL,
+            temperature=0.2,
+            max_retries=3,
+        )
+
+    if resolved == "groq":
+        if not settings.groq_api_key:
+            raise RuntimeError("GROQ_API_KEY is not set")
+        # langchain-groq is an optional dependency — import lazily so the app
+        # still boots (and other providers work) if it isn't installed.
+        from langchain_groq import ChatGroq  # type: ignore
+        model = settings.groq_model or _GROQ_MODEL
+        logger.info("LLM: using Groq model '%s'", model)
+        return ChatGroq(
+            model=model,
+            groq_api_key=settings.groq_api_key,
+            temperature=0.2,
+            max_retries=3,
+        )
+
+    raise RuntimeError(f"Unknown LLM provider: {resolved}")
 
 
 def reset_llm_cache() -> None:

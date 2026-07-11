@@ -1,10 +1,17 @@
+import { useEffect, useState } from 'react';
 import { Icon } from '../ui/Icon';
 import { useSettingsForm } from '../../hooks/useSettingsForm';
 import { useStatus } from '../../hooks/useStatus';
+import { getProviders } from '../../api/query';
+import { PROVIDER_LABELS, type ProvidersResponse } from '../../types';
 
 export default function DesktopSettings() {
-  const { form, showKey, saved, setField, toggleShowKey, handleSave, handleReset } = useSettingsForm();
+  const { form, showKey, saved, error, setField, toggleShowKey, handleSave, handleReset } = useSettingsForm();
   const { data: statusData } = useStatus();
+  const [providers, setProviders] = useState<ProvidersResponse | null>(null);
+  useEffect(() => {
+    getProviders().then(setProviders).catch(() => {});
+  }, []);
 
   // Derive real env/service status from the /status endpoint
   const services = statusData?.services ?? [];
@@ -47,10 +54,10 @@ export default function DesktopSettings() {
                 <p className="text-[14px] text-on-surface-variant mt-1">Select the primary model used for synthesis and generation.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  { id: 'gemini', name: 'Gemini 1.5 Flash', desc: 'Optimized for speed and long-context retrieval tasks.' },
-                  { id: 'openai', name: 'OpenAI GPT-4o',    desc: 'High reasoning capability for complex synthesis.' },
-                ].map(opt => {
+                {(providers && providers.available.length > 0
+                  ? providers.available.map(id => ({ id, name: PROVIDER_LABELS[id] ?? id, desc: 'Configured on this server.' }))
+                  : [{ id: 'gemini', name: 'Gemini', desc: 'Default provider.' }]
+                ).map(opt => {
                   const isSelected = form.llmProvider === opt.id;
                   return (
                     <label key={opt.id} className={`cursor-pointer relative rounded-lg border p-4 flex flex-col gap-2 transition-all ${isSelected ? 'border-primary-container bg-primary-container/5' : 'border-surface-container-highest bg-surface hover:bg-surface-variant/50'}`}>
@@ -136,6 +143,9 @@ export default function DesktopSettings() {
               </div>
             </div>
 
+            {error && (
+              <p className="text-[12px] text-[#ef4444] mt-2">⚠ {error}</p>
+            )}
             <div className="flex items-center justify-end gap-6 mt-4">
               <button type="button" onClick={handleReset} className="text-on-surface-variant hover:text-on-surface transition-colors text-[12px] font-semibold tracking-[0.05em]">
                 Reset to defaults
